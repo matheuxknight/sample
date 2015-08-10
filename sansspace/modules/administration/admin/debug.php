@@ -1,0 +1,7 @@
+
+<script>
+
+stagegetcookie("PHPSESSID");
+
+</script>
+
