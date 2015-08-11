@@ -237,75 +237,65 @@ class XmlController extends CommonController
 		header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
 		header('Pragma: no-cache');
 	
-		$phpsessid = getparam('phpsessid');
-		
-		$session = getdbosql('Session', "phpsessid='$phpsessid'");
-		$user = $session->user;
-		$chat = getdbosql('Chat', "type=".CMDB_CHATTYPE_PUBLIC);
-
 		echo "<?xml version='1.0' encoding='utf-8' ?>";
 		echo "<objects>";
 	
 		echo "<object>
 			<servertitle>".param('title')."</servertitle>
-			<serverconnect>".getPlayerConnect()."</serverconnect>
-					
-			<appcolor>".preg_replace('/#/', '0x', param('appheadercolor'))."</appcolor>
-			<appback>".preg_replace('/#/', '0x', param('appheaderback'))."</appback>
-			<headercolor>".preg_replace('/#/', '0x', param('appheadercolor'))."</headercolor>
-			<headerback>".preg_replace('/#/', '0x', param('appheaderback'))."</headerback>
-			<maincolor>".preg_replace('/#/', '0x', param('appmaincolor'))."</maincolor>
-			<mainback>".preg_replace('/#/', '0x', param('appmainback'))."</mainback>
-			<mainalpha>".preg_replace('/#/', '0x', param('appmainalpha'))."</mainalpha>
-			<slidercolor>".preg_replace('/#/', '0x', param('appslidercolor'))."</slidercolor>
-			<bookmarkprefix>".param('bookmarkprefix')."</bookmarkprefix>
-			<userid>$user->id</userid>
-			<username>$user->name</username>
-			<userlogon>$user->logon</userlogon>
-			<chatid>$chat->id</chatid>
-			<phpsessid>$phpsessid</phpsessid>
-		</object>";
-		
-		echo "</objects>";
-	}
-	
-	public function actionLogin()
-	{
-		$phpsessid = user()->isGuest? '': session_id();
-		
-		$session = getdbosql('Session', "phpsessid='$phpsessid'");
-		$user = $session->user;
-		
-		header("Content-Type: text/xml");
-		header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
-		header('Pragma: no-cache');
-	
-		echo "<?xml version='1.0' encoding='utf-8' ?>";
-		echo "<objects>";
-		
-		echo "<object>
-			<servertitle>".param('title')."</servertitle>
+			<servername>".$_SERVER['HTTP_HOST']."</servername>
 			<connect>".getPlayerConnect()."</connect>
 			<connecthttp>".getFullServerName()."</connecthttp>
-			
-			<userid>$user->id</userid>
-			<username>$user->name</username>
-			<userlogon>$user->logon</userlogon>
-			<phpsessid>$phpsessid</phpsessid>
-			
-			<headercolor>".preg_replace('/#/', '0x', param('appheadercolor'))."</headercolor>
-			<headerback>".preg_replace('/#/', '0x', param('appheaderback'))."</headerback>
-			<maincolor>".preg_replace('/#/', '0x', param('appmaincolor'))."</maincolor>
+
+ 			<headercolor>".preg_replace('/#/', '0x', param('appheadercolor'))."</headercolor>
+ 			<headerback>".preg_replace('/#/', '0x', param('appheaderback'))."</headerback>
+ 			<maincolor>".preg_replace('/#/', '0x', param('appmaincolor'))."</maincolor>
 			<mainback>".preg_replace('/#/', '0x', param('appmainback'))."</mainback>
 			<mainalpha>".preg_replace('/#/', '0x', param('appmainalpha'))."</mainalpha>
 			<slidercolor>".preg_replace('/#/', '0x', param('appslidercolor'))."</slidercolor>
-			<bookmarkprefix>".param('bookmarkprefix')."</bookmarkprefix>
-			</object>";
+			<bookmarkprefix>".param('bookmarkprefix')."</bookmarkprefix>";
+
+ 		$phpsessid = getparam('phpsessid');
+ 		if($phpsessid)
+ 		{
+ 			$session = getdbosql('Session', "phpsessid='$phpsessid'");
+ 			if($session)
+ 			{
+ 				$user = getdbo('User', $session->userid);
+// 				controller()->identity->authorize($user);
+
+				echo "<userid>$user->id</userid>
+					<username>$user->name</username>
+					<userlogon>$user->logon</userlogon>
+		 			<userimage>".userImageUrl($user)."</userimage>
+					<phpsessid>$phpsessid</phpsessid>";
+ 				}
+ 		}
 		
+ 		else if(!user()->isGuest)
+ 		{
+			$phpsessid = session_id();
+			$user = getUser();
+			
+			echo "<userid>$user->id</userid>
+				<username>$user->name</username>
+				<userlogon>$user->logon</userlogon>
+	 			<userimage>".userImageUrl($user)."</userimage>
+				<phpsessid>$phpsessid</phpsessid>";
+ 		}
+ 		else
+ 			echo "<userid>0</userid>";
+ 			
+		echo "</object>";
 		echo "</objects>";
 	}
 	
+
 }
+
+
+
+
+
 
 
 

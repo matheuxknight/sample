@@ -5,8 +5,6 @@ showNavigationBar($object->parent);
 showObjectHeader($object);
 showObjectMenu($object);
 
-// search box
-
 echo CUFHtml::label('Search: ', '').' ';
 echo CUFHtml::textField('code_search_input', '', array('class'=>'textInput', 'maxlength'=>200)).' ';
 

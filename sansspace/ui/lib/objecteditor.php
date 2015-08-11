@@ -45,7 +45,7 @@ function showHtmlEditor($id, $height=160, $toolbar='custom1')
 			styleWithCSS: false,
 			height: $height,
 			toolbar: '$toolbar',
-			resizable: true,
+			resizable: false,
 			allowSource: $showsource,
 			hideStatusbar: $hidestatus,
 			cssfiles: ['/sansspace/ui/css/main.css', '/extensions/elrte/css/elrte-inner.css'],
@@ -65,12 +65,13 @@ function showHtmlEditor($id, $height=160, $toolbar='custom1')
 			}
 		};
 	
-		$('#$id').elrte(opts);");
+		$('#$id').elrte(opts);
+		$('.source').attr('active','true');");
 	}
 
 	else if(param('htmleditor') == 'ck-editor')
 	{
-		echo "<script>CKEDITOR.replace('$id', ckeditor_config);</script>";
+		echo "<script>$('.source').attr('data','true');CKEDITOR.replace('$id', ckeditor_config);</script>";
 	}
 
 	else
@@ -78,6 +79,7 @@ function showHtmlEditor($id, $height=160, $toolbar='custom1')
 	$cssfile = '/sansspace/ui/css/main.css';
 	echo <<<END
 	<script>
+	$('.source').attr('data','true');
 	tinyMCE.init(
 	{
 	mode: "exact",

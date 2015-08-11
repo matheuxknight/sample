@@ -1,11 +1,10 @@
 <?php
-
 $this->pageTitle = app()->name .' - '. $file->name;
 
 if(	$file->filetype == CMDB_FILETYPE_MEDIA || 
 	$file->filetype == CMDB_FILETYPE_BOOKMARKS ||
 	$file->filetype == CMDB_FILETYPE_SRT)
-	echo "<table width='100%'><tr><td align='top'>";
+	echo "<table width='100%'><tr><td valign='top'>";
 
 showRoleBar($file);
 showNavigationBar($file->parent);
@@ -42,10 +41,5 @@ if(	$file->filetype == CMDB_FILETYPE_MEDIA ||
 	
 	showFileInfoSameFolder($file);
 	echo "</td></tr></table>";
-
 }
-echo <<<end
-<script>
-document.getElementById('mytext').scrollIntoView() 
-</script>
-end;
+

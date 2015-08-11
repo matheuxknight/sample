@@ -24,6 +24,7 @@ class VCourse extends CActiveRecord
 		return array(
 			array('name', 'required'),
 			array('name','length','max'=>200),
+			//array('exempt'),
 				
 			VCourse::$startdate_required? array('startdate', 'required'): null,
 				
@@ -74,6 +75,15 @@ class VCourse extends CActiveRecord
 	}
 
 	/////////////////////
+	
+	public function getExempt()
+	{
+	if ($this->ext->custom == 1)
+			$exempt = "Exempt";
+		else
+			$exempt = "Not Exempt";
+		return $exempt;
+	}
 
 	public function getTypeOptions()
 	{
@@ -189,6 +199,28 @@ class VCourse extends CActiveRecord
 
 		return $result;
 	}
+	
+	public function getTeacherName2($admin=false)
+	{
+		$result = '';
+
+		$enrollments = getdbolist('CourseEnrollment', "objectid=$this->id and roleid=".SSPACE_ROLE_TEACHER);
+		if($enrollments) foreach($enrollments as $e)
+		{
+			if($e->user)
+			{
+				if(!empty($result))
+					$result .= ', ';
+
+				if($admin)
+					$result .= l($e->user->name);
+				else
+					$result .= $e->user->email;
+			}
+		}
+
+		return $result;
+	}
 
 	/////////////////////
 
@@ -209,10 +241,10 @@ class VCourse extends CActiveRecord
 	public function delete()
 	{
 		$object = getdbo('Object', $this->id);
-		$course = getdbo('Course', $this->id);
+		//$course = getdbo('Course', $this->id);
 		
 		$object->delete();
-		$course->delete();
+		//$course->delete();
 		
 		return true;
 	}
@@ -244,6 +276,54 @@ class VCourse extends CActiveRecord
 	public function getTypeDetails()
 	{
 		return $this->object->typeDetails;
+	}
+	
+	public function getCreatedint()
+	{
+		$a = explode(' ', $this->created);
+		return isset($a[0])? $a[0]: '';
+	}
+	
+	public function getCreatedyearint()
+	{
+		$a = explode('-', $this->createdint);
+		return isset($a[0])? $a[0]: '';
+	}
+
+	public function getCreatedmonthint()
+	{
+		$a = explode('-', $this->createdint);
+		return isset($a[1])? $a[1]: '';
+	}
+
+	public function getCreateddayint()
+	{
+		$a = explode('-', $this->createdint);
+		return isset($a[2])? $a[2]: '';
+	}
+
+	public function getNowint()
+	{
+		$a = explode(' ', now());
+		return isset($a[0])? $a[0]: '';
+	}
+	
+	public function getNowyearint()
+	{
+		$a = explode('-', $this->nowint);
+		return isset($a[0])? $a[0]: '';
+	}
+
+	public function getNowmonthint()
+	{
+		$a = explode('-', $this->nowint);
+		return isset($a[1])? $a[1]: '';
+	}
+
+	public function getNowdayint()
+	{
+		$a = explode('-', $this->nowint);
+		return isset($a[2])? $a[2]: '';
 	}
 }
 

@@ -44,9 +44,10 @@ class CRegularExpressionValidator extends CValidator
 	//	debuglog("$this->pattern,$value");
 		if(!preg_match($this->pattern,$value))
 		{
-			$message=$this->message!==null?$this->message:Yii::t('yii','{attribute} is invalid.');
+			$message=$this->message!==null?$this->message:Yii::t('yii','{attribute} cannot be accepted. Please check special characters and try again.');
 			$this->addError($object,$attribute,$message);
 		}
 	}
 }
+
 

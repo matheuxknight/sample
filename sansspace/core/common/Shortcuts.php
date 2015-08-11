@@ -134,7 +134,7 @@ function param($name)
 		'title'=>'SANSSpace',
 		'adminemail'=>'support@sansinc.com',
 		'allowregister'=>false,
-		'autoplay'=>false,
+		'autoplay'=>true,
 		'useshortdate'=>true,
 		'emailenrollment'=>false,
 		'quicklogin'=>true,
@@ -177,7 +177,8 @@ function param($name)
 		'appmainback'=>'#eeeeee',
 		'appmainalpha'=>'.9',
 		'appslidercolor'=>'#999999',
-
+		'appautosave'=>false,
+				
 		'required_password'=>true,
 		'required_email'=>true,
 		'required_organisation'=>false,
@@ -278,12 +279,34 @@ function currentPageIconset()
 	while($object)
 	{
 		if(!empty($object->ext->customiconset) && $object->ext->customiconset != 'default')
+		{
+		//	debuglog("$object->name ($object->id) {$object->ext->customiconset}");
 			return $object->ext->customiconset;
-
+		}
+		
 		$object = $object->parent;
 	}
 
 	return param('iconset');
 }
+
+function currentPageTheme()
+{
+	$object = getdbo('Object', getparam('id'));
+	while($object)
+	{
+		if(!empty($object->ext->customiconset) && $object->ext->customiconset != 'default')
+		{
+		//	debuglog("$object->name ($object->id) {$object->ext->customiconset}");
+			return $object->ext->customiconset;
+		}
+		
+		$object = $object->parent;
+	}
+
+	return param('theme');
+}
+
+
 
 

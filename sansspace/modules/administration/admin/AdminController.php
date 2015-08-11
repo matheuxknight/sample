@@ -5,10 +5,23 @@ class AdminController extends CommonController
 	public function actionTest()
 	{
 	}
+    
+    public function actionAnnouncement()
+	{
+		$this->render('announcement');
+	}
+    
+    public function actionAnnouncementSave()
+	{
+		$this->render('announcementSave');
+	}
 
 	public function actionIndex()
 	{
 		$this->render('index');
+	}
+	public function actionAltQuestions(){
+		$this->render('altquestions');
 	}
 
 	public function actionDebug()

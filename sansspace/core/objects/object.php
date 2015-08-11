@@ -45,16 +45,16 @@ function objectUpdateData($object, $data, $data2)
 	$object->updated = now();
 	$object->parentlist = objectParentList($object);
 
-	if($object->type == CMDB_OBJECTTYPE_OBJECT && $object->folderimportid)
-	{
-		$oldname = objectPathname($object);
-		$object->pathname = "{$object->parent->pathname}/$object->name";
+// 	if($object->type == CMDB_OBJECTTYPE_OBJECT && $object->folderimportid)
+// 	{
+// 		$oldname = objectPathname($object);
+// 		$object->pathname = "{$object->parent->pathname}/$object->name";
 
-		$newname = objectPathname($object);
+// 		$newname = objectPathname($object);
 		
-		debuglog("move $oldname, $newname");
-		@rename($oldname, $newname);
-	}
+// 		debuglog("move $oldname, $newname");
+// 		@rename($oldname, $newname);
+// 	}
 			
 	$object->save(true);
 	return $object;
@@ -96,7 +96,9 @@ function objectInit($object, $parentid)
 	$object->scanstatus = CMDB_OBJECTSCAN_READY;
 	$object->folderimportid = 0;
 	$object->tags = '';
-	$object->courseid = user()->getState('courseid');
+	
+	if(param('theme') == 'wayside')
+		$object->courseid = getContextCourseId();
 	
 	$ok = $object->validate();
 	if(!$ok) return null;
@@ -312,21 +314,33 @@ function objectPathnameThumbnail($object)
 	return $result;
 }
 
+function objectPathnameSoundSamples($object)
+{
+	$result = SANSSPACE_CACHE . "\\$object->id.samples";
+	return $result;
+}
+
 /////////////////////////////////////////////////////////////////////
 
 function objectUrl($object)
 {
+	$a = null;
 	switch($object->type)
 	{
 		case CMDB_OBJECTTYPE_COURSE:
-			return array('course/', 'id'=>$object->id);
+			$a = array('course/', 'id'=>$object->id);
 
 		case CMDB_OBJECTTYPE_FILE:
-			return array('file/', 'id'=>$object->id);
+			$a = array('file/', 'id'=>$object->id);
 
 		default:
-			return array('object/', 'id'=>$object->id);
+			$a = array('object/', 'id'=>$object->id);
 	}
+	
+//	$courseid = getContextCourseId();
+//	if($courseid) $a['courseid'] = $courseid;
+	
+	return $a;
 }
 
 function objectUrlUpdate($object)

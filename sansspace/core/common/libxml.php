@@ -231,7 +231,7 @@ function File2Xml($file, $template=null)
 	$url = getFullServerName().objectImageUrl($file);
 	
 	$canwrite = '0';
-	if(controller()->rbac->objectAction($file, 'update'))
+	if(controller()->rbac->objectAction($file, 'delete'))
 		$canwrite = '1';
 	
 //	debuglog($canwrite);

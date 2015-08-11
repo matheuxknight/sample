@@ -123,6 +123,7 @@ if(!$ce)
 		}
 	}
 }
+
 else
 {
 	// update
@@ -137,12 +138,12 @@ else
 			$command = new Command;
 			$command->id = $c['id'];
 			$command->name = $c['name'];
+			$command->title = $c['title'];
+			$command->url = $c['url'];
 			$isnew = true;
 		}
 		
 		$command->description = $c['description'];
-		$command->title = $c['title'];
-		$command->url = $c['url'];
 		$command->objecttype = isset($c['objecttype'])? $c['objecttype']: false;
 		$command->createitem = isset($c['createitem'])? $c['createitem']: false;
 		$command->hideadmin = isset($c['hideadmin'])? $c['hideadmin']: false;
@@ -167,9 +168,47 @@ else
 
 //////////////////////////////////////////////
 
+$roletranslatetable = array(
+	3=>SSPACE_ROLE_CONTENT,
+	4=>SSPACE_ROLE_TEACHER,
+	5=>SSPACE_ROLE_STUDENT,
+	6=>SSPACE_ROLE_USER,
+	7=>SSPACE_ROLE_ALL,
+);
+
+$list = getdbolist('CommandEnrollment', "roleid>2 and roleid<10");
+foreach($list as $e)
+{
+	$e->roleid = $roletranslatetable[$e->roleid];
+	$e->save();
+}
+
+$list = getdbolist('CourseEnrollment', "roleid>2 and roleid<10");
+foreach($list as $e)
+{
+	$e->roleid = $roletranslatetable[$e->roleid];
+	$e->save();
+}
+
+$list = getdbolist('ObjectEnrollment', "roleid>2 and roleid<10");
+foreach($list as $e)
+{
+	$e->roleid = $roletranslatetable[$e->roleid];
+	$e->save();
+}
+
+$list = getdbolist('UserEnrollment', "roleid>2 and roleid<10");
+foreach($list as $e)
+{
+	$e->roleid = $roletranslatetable[$e->roleid];
+	$e->save();
+}
+
+//////////////////////////////////////////////
+
 safeObjectEnrollment(0, SSPACE_ROLE_NETWORK, CMDB_OBJECTROOT_ID);
 safeObjectEnrollment(0, SSPACE_ROLE_ADMIN, CMDB_OBJECTROOT_ID);
-safeObjectEnrollment(0, SSPACE_ROLE_CONTENT, CMDB_OBJECTROOT_ID);
+//safeObjectEnrollment(0, SSPACE_ROLE_CONTENT, CMDB_OBJECTROOT_ID);
 
 dborun("delete from Cronjob where name='Reset Sessions'");
 dborun("delete from Cronjob where name='Check Update'");
@@ -271,7 +310,7 @@ foreach($list as $e)
 	$object = getdbo('Object', $e->objectid);
 	if($object->type != CMDB_OBJECTTYPE_COURSE) continue;
 	
-	debuglog("fixing course enrollment $object->name");
+//	debuglog("fixing course enrollment $object->name");
 	
 	$e->courseid = 0;
 	$e->save();

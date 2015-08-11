@@ -16,7 +16,7 @@ class CommentController extends CommonController
 			$comment->attributes = $_POST['Comment'];
 			$comment->authorid = getUser()->id;
 			$comment->parentid = $_GET['id'];
-			$comment->courseid = user()->getState('courseid');
+			$comment->courseid = getContextCourseId();
 
 			$comment->updated = now();
 			$comment->created = now();

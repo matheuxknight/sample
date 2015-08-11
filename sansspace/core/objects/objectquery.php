@@ -43,7 +43,7 @@ function filterRecordingName($object)
 		else if(!intval(getparam('id')))
 			$object->name = $object->parent->name;
 		else
-			$object->name = "Students' Work";	// ({$object->parent->name})";
+			$object->name = "Student Files";	// ({$object->parent->name})";
 	}
 
 	else if($object->authorid == userid() && $object->parent->recordings)
@@ -97,93 +97,47 @@ function filterObjectQuery($criteria)
 		user()->setState('listsort', $_GET['displayorder']);
 	}
 
-	////////////////////////////////////////////////////////////////
-
-// 	$showfilter = isset($_GET['filter'])? $_GET['filter']: '';
-// 	if(!empty($showfilter))
-// 	{
-// 		if($showfilter == 'showfolder')
-// 			$sql = "type=".CMDB_OBJECTTYPE_OBJECT." and ".$sql;
-
-// 		if($showfilter == 'showcourse')
-// 			$sql = "type=".CMDB_OBJECTTYPE_COURSE." and ".$sql;
-
-// 		if($showfilter == 'showfile')
-// 			$sql = "type=".CMDB_OBJECTTYPE_FILE." and ".$sql;
-
-// 		if($showfilter == 'showlink')
-// 			$sql = "type=".CMDB_OBJECTTYPE_LINK." and ".$sql;
-// 	}
-
 	$showfilter = getparam('filter');
 	if($showfilter != -1)
 		$sql = "type=$showfilter and $sql";
-	
-	////////////////////////////////////////////////////////////////
-
-	//	$sql = "not recordings and ".$sql;
-	//	debuglog($sql);
 
 	$criteria->condition = $sql;
 	return $criteria;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////
 
 function ObjectQueryIterate(&$addids, $object)
 {
 	if(!$object) return;
-	//	debuglog("ObjectQueryIterate($object->name, $object->id)");
+//	debuglog("ObjectQueryIterate($object->name, $object->id)");
 
-	$os = getdbolist('Object', "parentid={$object->id} and type=".CMDB_OBJECTTYPE_LINK);
+	$os = getdbolist('Object', "parentid=$object->id and type=".CMDB_OBJECTTYPE_LINK);
 	foreach($os as $o)
-		ObjectQueryProcessItem(&$addids, $o->link);
+		ObjectQueryProcessItem($addids, $o->link);
 
-	if($object->model)
+	$parent = $object->parent;
+	while($parent && $parent->model)
 	{
-		$parent = $object->parent;
-		while($parent && $parent->model)
+	//	debuglog("$parent->name");
+		$rcs = getdbolist('Object', "parentid=$parent->id and type=".CMDB_OBJECTTYPE_LINK);
+		if($rcs) foreach($rcs as $rc)
 		{
-			$rcs = getdbolist('Object', "parentid={$parent->id} and type=".CMDB_OBJECTTYPE_LINK);
-			if($rcs) foreach($rcs as $rc)
-			{
-				ObjectQueryProcessItem(&$addids, $rc->link);
-				$addids[$rc->id] = true;
-			}
-
-			$parent = $parent->parent;
+			ObjectQueryProcessItem($addids, $rc->link);
+			$addids[$rc->id] = true;
 		}
+
+		$parent = $parent->parent;
 	}
 }
 
 function ObjectQueryProcessItem(&$addids, $object, $func=null)
 {
-	//	debuglog("ObjectQueryProcessItem($object->name, $object->id)");
-
-	if($func) $func(&$addids, $object);
-	// 	$found = false;
-
-	// 	// check if already added
-	// 	foreach($addids as $ai=>$ar)
-		// 	{
-		// 		$aio = getdbo('Object', $ai);
-		// 		if(	$aio->type != CMDB_OBJECTTYPE_COURSE &&
-		// 			$aio->type != CMDB_OBJECTTYPE_ACTIVITY &&
-		// 			strstr($object->parentlist, ", $ai,"))
-			// 		{
-			// 		//	debuglog("found $object->name - {$object->parentlist} - $ai");
-			// 			$found = true;
-			// 			break;
-			// 		}
-			// 	}
-
-	// 	if(!$found)
+	if($func) $func($addids, $object);
 	$addids[$object->id] = true;
 }
 
-	///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
 
 function buildUserQuery($user)
 {
@@ -193,9 +147,8 @@ function buildUserQuery($user)
 	$objectids = $user->objectEnrollmentsExt();
 	foreach($objectids as $id=>$roleid)
 	{
-		//	debuglog($id);
 		$object = getdbo('Object', $id);
-		ObjectQueryProcessItem(&$addids, $object, ObjectQueryIterate);
+		ObjectQueryProcessItem($addids, $object, ObjectQueryIterate);
 	}
 
 	/////////////////////////////////////////////
@@ -203,14 +156,11 @@ function buildUserQuery($user)
 	$sql = "(parentlist like '%, {$user->folder->id}, %'";
 	foreach($addids as $ai=>$ar)
 	{
-		//	debuglog(" ->> $ai");
 		$sql .= " or parentlist like '%, $ai, %'";
 		$o = getdbo('Object', $ai);
 
 		if($o->type == CMDB_OBJECTTYPE_COURSE)
 		{
-			//	debuglog(" $o->name");
-
 			$e = getdbosql('CourseEnrollment', "userid=$user->id and objectid=$o->id");
 			$f = userRecordingFolder($o, $user);
 				
@@ -222,8 +172,6 @@ function buildUserQuery($user)
 	}
 
 	$sql .= ")";
-	//	debuglog("buildUserQuery: $sql");
-
 	return $sql;
 }
 
@@ -249,7 +197,7 @@ function buildSimpleObjectQuery($user, $parentid)
 	$sql = "(".$sql;
 	$sql = $sql." order by displayorder, name";
 
-	//	debuglog("buildSimpleObjectQuery $sql");
+//	debuglog("buildSimpleObjectQuery $sql");
 	return $sql;
 }
 
@@ -283,19 +231,23 @@ function buildObjectQuery($user, $id)
 		$object = getdbo('Object', $id);
 		if(!$object) return null;
 
-		$sql = buildUserQuery($user);
+		$courseid = getContextCourseId();
+		if($courseid)
+			$sql = "(courseid=0 or courseid=$courseid)";
+		else
+			$sql = "1";		//buildUserQuery($user);
 
 		if(!controller()->rbac->objectAction($object, 'update'))
 			$sql = "not deleted and not hidden and ".$sql;
 
-		//	debuglog("$sql");
+	//	debuglog("$sql");
 		if($object->type == CMDB_OBJECTTYPE_LINK)
 			$object = $object->link;
 
 		$sql2 = boqAddObject($object);
 		if($object->model)
 		{
-			//	debuglog("1 $object->name, $object->id");
+		//	debuglog("1 $object->name, $object->id");
 			$parent = $object->parent;
 			while($parent && $parent->model)
 			{
@@ -308,18 +260,6 @@ function buildObjectQuery($user, $id)
 			}
 		}
 
-// 		if($object->recordings)
-// 		{
-// 			$activities = getdbolist('VCourse',
-// 					"type=".CMDB_OBJECTTYPE_ACTIVITY.
-// 					" and parentlist like '%, {$object->parent->id}, %'");
-				
-// 			foreach($activities as $activity)
-// 			if($activity->recordingid != $object->id)
-// 				$sql2 = "$sql2 or id=$activity->recordingid";
-// 		}
-
-		//	debuglog("sql2 $sql2");
 		$sql = "($sql2) and $sql";
 	}
 
@@ -343,7 +283,7 @@ function buildObjectQuery($user, $id)
 		$sql = "(" . $sql;
 	}
 
-	//	debuglog("buildObjectQuery: $sql");
+//	debuglog("buildObjectQuery: $sql");
 	$criteria->condition = $sql;
 	return $criteria;
 }

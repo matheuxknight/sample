@@ -12,6 +12,15 @@ class ContactForm extends CFormModel
 	public $subject;
 	public $body;
 	public $verifyCode;
+	public $category;
+	public $accesscode;
+	public $teacher;
+	public $course;
+	public $server;
+	public $notenrolled;
+	public $it;
+	public $itemail;
+	public $itphone;
 
 	/**
 	 * Declares the validation rules.

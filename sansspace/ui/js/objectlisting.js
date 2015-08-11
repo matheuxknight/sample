@@ -2,13 +2,11 @@
 var currentpagenumber = 1;
 var currentobjectid = 0;
 var currentsearchtitle = '';
-var noheader = '';
-
-function initSearchBar(id, searchtitle, format, defaultsort, defaultsemester, defaultfilter, defaultnoheader)
+//
+function initSearchBar(id, searchtitle, format, defaultsort, defaultsemester, defaultfilter)
 {
 	currentobjectid = id;
 	currentsearchtitle = searchtitle;
-	noheader = defaultnoheader;
 
 	$('#showpanel').button({icons: {secondary: "ui-icon-triangle-1-e"}, text: true});
 	$('#showpanel').change(function(event)
@@ -105,7 +103,7 @@ function refreshContentPage()
 		"&recursive="+$('#recursive').is(':checked')+
 	//	"&filter="+$('input[name=showoptions1]:checked').attr('id')+
 		"&layout="+$('input[name=showoptions2]:checked').attr('id')+
-		"&page="+currentpagenumber+noheader,
+		"&page="+currentpagenumber,
 		"", function(data)
 	{
 		$('#results').html(data);

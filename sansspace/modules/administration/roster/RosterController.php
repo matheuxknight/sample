@@ -75,7 +75,19 @@ class RosterEntry
 			}
 		}
 		
-		//	debuglog();
+	//	debuglog();
+		
+		$this->coursename = addslashes($this->coursename);
+		$this->foldername = addslashes($this->foldername);
+		$this->username = addslashes($this->username);
+		$this->userlogon = addslashes($this->userlogon);
+		$this->useremail = addslashes($this->useremail);
+		$this->teachername = addslashes($this->teachername);
+		$this->teacherlogon = addslashes($this->teacherlogon);
+		$this->teacheremail = addslashes($this->teacheremail);
+		$this->customcourse = addslashes($this->customcourse);
+		$this->customuser = addslashes($this->customuser);
+		$this->languagename = addslashes($this->languagename);
 	}
 	
 }
@@ -299,7 +311,7 @@ class RosterController extends CommonController
 			
 			if(!empty($entry->customcourse))
 			{
-				$course->object->ext->custom = $customcourse;
+				$course->object->ext->custom = $entry->customcourse;
 				$course->object->ext->save();
 			}
 			

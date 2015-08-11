@@ -76,6 +76,8 @@ function mydumperror($obj, $level=2)
 
 function debuglog($string, $level=2)
 {
+	if(!SANSSPACE_DEBUGLOG) return;
+	
 	if(is_array($string) || is_object($string))
 	{
 		mydumperror($string, $level);

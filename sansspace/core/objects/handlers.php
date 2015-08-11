@@ -5,6 +5,9 @@
 
 function objectHandleCategory($object)
 {
+	// not used
+	return;
+	
 	if(!isset($_POST['Category'])) return;
 	foreach($_POST['Category'] as $categoryid=>$itemid)
 	{
@@ -148,6 +151,8 @@ function objectHandleImage($object)
 		$data = file_get_contents($_POST['icon_url']);
 		file_put_contents($filename, $data);
 	}
+	
+	@unlink(SANSSPACE_CONTENT."/stamped-{$object->id}.png");
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -181,7 +186,8 @@ function fileCopy($object, $object2)
 			$bookmark2->save();
 		}
 	}
-	else
+	
+	else if($f->filetype != CMDB_FILETYPE_URL)
 	{
 		$filename1 = objectPathname($object);
 		$filename2 = objectPathname($object2);
@@ -303,7 +309,11 @@ function objectCopy($object, $parentid)
 	$object2->duration = $object->duration;
 	$object2->hidden = $object->hidden;
 	
-	$object2->pathname = "$object2->id".getExtension($object->pathname);
+	if(strstr($object->pathname, 'http://') || strstr($object->pathname, 'https://'))
+		$object2->pathname = $object->pathname;
+	else
+		$object2->pathname = "$object2->id".getExtension($object->pathname);
+	
 	$object2->parentlist = objectParentList($object2);
 	$object2->scanstatus = CMDB_OBJECTSCAN_NONE;
 	$object2->save();

@@ -9,8 +9,14 @@ class TeacherreportController extends CommonController
 		$object = getdbo('Object', getparam('id'));
 		
 		if($object->type == CMDB_OBJECTTYPE_COURSE)
-			$this->render('show_course', array('object'=>$object));
-		
+		{
+			if(param('theme') == 'wayside')
+				$this->render('show_course', array('object'=>$object));
+				
+			else
+				$this->render('show');
+		}
+
 		else if($object->type == CMDB_OBJECTTYPE_QUIZ)
 			$this->render('show_quiz');
 		
@@ -18,7 +24,7 @@ class TeacherreportController extends CommonController
 			$this->render('show_survey');
 		
 		else
-			$this->render('show');		// not used
+			$this->render('show');
 	}
 
 	public function actionSummaryResults()

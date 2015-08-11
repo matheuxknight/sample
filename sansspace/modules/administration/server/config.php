@@ -137,13 +137,6 @@ echo CUFHtml::textField('site[logofftimeout]', param('logofftimeout'), array('cl
 echo "<p class='formHint2'>Auto logoff timeout, in minutes. 0 for no auto logoff.</p>";
 echo CUFHtml::closeCtrlHolder();
 
-// echo CUFHtml::openCtrlHolder();
-// echo CUFHtml::label('Show Role', 'site[showrole]');
-// echo CUFHtml::hiddenField('site[showrole]', '0');
-// echo CUFHtml::checkBox('site[showrole]', param('showrole'));
-// echo "<p class='formHint2'>For debugging purposes.</p>";
-// echo CUFHtml::closeCtrlHolder();
-
 echo CUFHtml::openCtrlHolder();
 echo CUFHtml::label('Auto Play', 'site[autoplay]');
 echo CUFHtml::hiddenField('site[autoplay]', '0');
@@ -439,6 +432,13 @@ echo CUFHtml::textField('site[appslidercolor]', param('appslidercolor'), array('
 echo "<p class='formHint2'>.</p>";
 echo CUFHtml::closeCtrlHolder();
 
+echo CUFHtml::openCtrlHolder();
+echo CUFHtml::label('Save in Guessed Folder', 'site[appautosave]');
+echo CUFHtml::hiddenField('site[appautosave]', '0');
+echo CUFHtml::checkBox('site[appautosave]', param('appautosave'));
+echo "<p class='formHint2'>Automatically save recordings and bookmarks to the system's guessed folder.</p>";
+echo CUFHtml::closeCtrlHolder();
+
 echo "</div>";
 
 //////////////////////////////////////////////////////////////
@@ -613,6 +613,12 @@ echo CUFHtml::closeCtrlHolder();
 // 	are enrolled by an automated script running on this server.</p>";
 // echo CUFHtml::closeCtrlHolder();
 
+echo CUFHtml::openCtrlHolder();
+echo CUFHtml::label('Show Role', 'site[showrole]');
+echo CUFHtml::hiddenField('site[showrole]', '0');
+echo CUFHtml::checkBox('site[showrole]', param('showrole'));
+echo "<p class='formHint2'>For debugging purposes.</p>";
+echo CUFHtml::closeCtrlHolder();
 
 echo "</div>";
 

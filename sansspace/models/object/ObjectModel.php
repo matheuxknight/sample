@@ -266,4 +266,3 @@ class Object extends CActiveRecord
 }
 
 
-

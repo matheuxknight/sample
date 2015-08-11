@@ -51,38 +51,62 @@ function QuizAutoCorrection($quiz, $attempt)
 				$answer = getdbosql('QuizAttemptAnswer', "attemptid=$attempt->id and questionid=$question->id");
 				if(!$answer) continue;
 
-				$answer->result = 0;
+				//$answer->result = 0;
 				$lista = getdbolist('QuizQuestionShortText', "questionid=$question->id");
 
-				foreach($lista as $a) if($answer->answershort == $a->value)
+				foreach($lista as $a)
 				{
-					$answer->result = $a->valid * $question->grade / 100;
-					break;
+					if(strtolower($answer->answershort) == strtolower($a->value)){
+							$answer->result = $a->valid * $question->grade / 100;
+							$answer->save();
+							}
+					if($answer->result > 0){
+							$answer->save();
+							}
+					else{
+						$answer->result = 0;
+						$answer->save();
+							}
 				}
 				
-				if($answer->result == 0 && !empty($answer->answershort) && $quiz->applypenalties)
-					$answer->result = -$question->penalty * $question->grade / 100;
+				//if($answer->result == 0 && !empty($answer->answershort) && $quiz->applypenalties)
+				//	$answer->result = -$question->penalty * $question->grade / 100;
 
-				$answer->save();
+				//$answer->save();
 				break;
 
 			case CMDB_QUIZQUESTION_SELECT:
 				$answer = getdbosql('QuizAttemptAnswer', "attemptid=$attempt->id and questionid=$question->id");
 				if(!$answer) continue;
-
-				$answer->result = 0;
+				
+				//$answer->result = 0;
+					
 				$lista = getdbolist('QuizQuestionSelect', "questionid=$question->id");
+				
+				
+				foreach($lista as $a) 
+					{	
+						if($answer->result > 0){
+							$answer->save();
+							}
+						elseif($answer->answerselectid == $a->id){
+							$answer->result = $a->valid * $question->grade / 100;
+							$answer->save();
+							}
+						elseif($answer->answerselectid == NULL){
+							$answer->result = 0;
+							$answer->save();
+							}
+						else{
+							$answer->result = 0;
+							$answer->save();
+							}
+					}	
 
-				foreach($lista as $a) if($answer->answerselectid == $a->id)
-				{
-					$answer->result = $a->valid * $question->grade / 100;
-					break;
-				}
+				//if($answer->result == 0 && $answer->answerselectid != 0 && $quiz->applypenalties)
+				//	$answer->result = -$question->penalty * $question->grade / 100;
 
-				if($answer->result == 0 && $answer->answerselectid != 0 && $quiz->applypenalties)
-					$answer->result = -$question->penalty * $question->grade / 100;
-
-				$answer->save();
+				
 				break;
 
 			case CMDB_QUIZQUESTION_MATCHING:
@@ -90,14 +114,17 @@ function QuizAutoCorrection($quiz, $attempt)
 				foreach($answers as $answer)
 				{
 					$answer->result = 0;
+
 					if($answer->answermatchingid1 == $answer->answermatchingid2)
 					{
 						$qqm = getdbo('QuizQuestionMatching', $answer->answermatchingid1);
 						$answer->result = $qqm->valid * $question->grade / 100;
+						$answer->save();
 					}
 
-					if($answer->result == 0 && $answer->answermatchingid1 != 0 && $quiz->applypenalties)
-						$answer->result = -$question->penalty * $question->grade / 100;
+					
+					//if($answer->result == 0 && $answer->answermatchingid1 != 0 && $quiz->applypenalties)
+					//	$answer->result = -$question->penalty * $question->grade / 100;
 				
 					$answer->save();
 				}
@@ -157,7 +184,7 @@ function QuizAutoCorrection($quiz, $attempt)
 				break;
 		
 			case CMDB_QUIZQUESTION_SHORTTEXT:
-			case CMDB_QUIZQUESTION_SELECT:
+			case CMDB_QUIZQUESTION_SELECT: 
 			case CMDB_QUIZQUESTION_COMPARATIVE:
 			case CMDB_QUIZQUESTION_RECORD:
 			case CMDB_QUIZQUESTION_LONGTEXT:

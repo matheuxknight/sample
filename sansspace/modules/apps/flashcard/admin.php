@@ -9,7 +9,10 @@ $flashvars =
 	"&mainalpha=".preg_replace('/#/', '0x', param('appmainalpha')).
 	"&slidercolor=".preg_replace('/#/', '0x', param('appslidercolor')).
 	"&phpsessid=".session_id().
+	"&autosave=".param('appautosave').
+	"&servername=".$_SERVER['HTTP_HOST'].
 	"&connect=".getPlayerConnect().
+	"&connectrtmpt=".getPlayerConnectRtmpt().
 	"&connecthttp=".getFullServerName()."&id=";
 
 showNavigationBar($object->parent);
@@ -69,15 +72,6 @@ if(!count($flashcards))
 
 else foreach($flashcards as $flashcard)
 {
-	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_value1", $flashcard->value1);
-	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_fileid1", $flashcard->fileid1);
-	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_startpos1", $flashcard->startpos1);
-	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_duration1", $flashcard->duration1);
-	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_value2", $flashcard->value2);
-	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_fileid2", $flashcard->fileid2);
-	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_startpos2", $flashcard->startpos2);
-	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_duration2", $flashcard->duration2);
-	
 	$startpos1 = sectoa($flashcard->startpos1);
 	$duration1 = sectoa($flashcard->duration1);
 	
@@ -89,7 +83,16 @@ else foreach($flashcards as $flashcard)
 	
 	echo "<tr id='flashcard_$flashcard->id' class='ssrow' onclick='load_flash_item($flashcard->id)'>";
 	
- 	echo "<td>$flashcard->value1";
+	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_value1", $flashcard->value1);
+	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_fileid1", $flashcard->fileid1);
+	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_startpos1", $flashcard->startpos1);
+	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_duration1", $flashcard->duration1);
+	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_value2", $flashcard->value2);
+	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_fileid2", $flashcard->fileid2);
+	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_startpos2", $flashcard->startpos2);
+	echo CUFHtml::hiddenField("Flashcard_{$flashcard->id}_duration2", $flashcard->duration2);
+	
+	echo "<td>$flashcard->value1";
 
  	if($flashcard->file1 && $flashcard->file1->filetype == CMDB_FILETYPE_MEDIA)
  		echo "<a href='javascript:flashcardOsrPlayer(1, $flashcard->id, $flashcard->fileid1, $flashcard->startpos1, $flashcard->duration1)'>

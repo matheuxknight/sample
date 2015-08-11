@@ -52,10 +52,23 @@ class PermissionController extends CommonController
 	
 	public function actionResetPermissions()
 	{
-	//	dborun("update Object set custompermission=false");
+		dborun("update Object set custompermission=false");
+		dborun("delete from Role");
 		dborun("delete from Command");
-		dborun("delete from CommandEnrollment where objectid=0");
+		dborun("delete from CommandEnrollment");
 
+		$roletable = RbacDefaultRoles();
+		foreach($roletable as $roleitem)
+		{
+			$role = getdbo('Role', $roleitem['id']);
+			$role = new Role;
+			$role->id = $roleitem['id'];
+			$role->name = $roleitem['name'];
+			$role->description = $roleitem['description'];
+			$role->type = $roleitem['type'];
+			$role->save();
+		}
+		
 		$commands = RbacDefaultCommands();
 		foreach($commands as $c)
 		{

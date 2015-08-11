@@ -147,6 +147,8 @@ class CHttpSession extends CApplicationComponent implements IteratorAggregate,Ar
 	 */
 	public function setSessionID($value)
 	{
+	//	debuglog(__METHOD__);
+	//	debuglog($value);
 		session_id($value);
 	}
 

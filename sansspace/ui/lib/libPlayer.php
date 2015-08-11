@@ -4,7 +4,6 @@
 
 function showMediaContent($file)
 {
-	// TODO: apostrophe
 	$name = addslashes(removeExtension($file->name));
 	
 	$autostart = getparam('autoplay');
@@ -41,20 +40,32 @@ function showMediaContent($file)
 	
 	if(!$masterid)
 	{
-		$f = getdbosql('VFile', "name like '$name%' and parentid=$file->parentid and filetype=".CMDB_FILETYPE_MEDIA);
+		$f = getdbosql('VFile', "id != $recordid and name like '%$name%' and parentid=$file->parentid and filetype=".CMDB_FILETYPE_MEDIA);
 		if($f) $masterid = $f->id;
+	}
+	
+	if(!$recordid)
+	{
+		$f = getdbosql('VFile', "originalid=$file->id and parentid=$file->parentid and filetype=".CMDB_FILETYPE_MEDIA);
+		if($f) $recordid = $f->id;
 	}
 	
 	if(!$subtitlesid)
 	{
-		$f = getdbosql('VFile', "name like '$name%' and parentid=$file->parentid and filetype=".CMDB_FILETYPE_SRT);
+		$f = getdbosql('VFile', "name like '%$name%' and parentid=$file->parentid and filetype=".CMDB_FILETYPE_SRT);
 		if($f) $subtitlesid = $f->id;
 	}
 	
 	if(!$bookmarksid)
 	{
-		$f = getdbosql('VFile', "name like '$name%' and parentid=$file->parentid and filetype=".CMDB_FILETYPE_BOOKMARKS);
+		$f = getdbosql('VFile', "name like '%$name%' and parentid=$file->parentid and filetype=".CMDB_FILETYPE_BOOKMARKS);
 		if($f) $bookmarksid = $f->id;
+		
+		else
+		{
+			$f = getdbosql('VFile', "name like 'Bookmark - $name%' and parentid=$file->parentid and filetype=".CMDB_FILETYPE_BOOKMARKS);
+			if($f) $bookmarksid = $f->id;
+		}
 	}
 	
 	if(!$parentid) $parentid = $file->parentid;
@@ -67,7 +78,7 @@ function showMediaContent($file)
 		"&templateid=$templateid&subtitlesid=$subtitlesid".
 		"&bookmarksid=$bookmarksid";
 
-//	debuglog($flashvars);
+	debuglog($flashvars);
 	ShowApplication($flashvars, 'recorder', 'sansmediad', 320);
 	JavascriptReady("RightClick.init('$name');");
 	
@@ -136,7 +147,10 @@ function getMiniPlayer($file, $width=480)
 		"&mainalpha=".preg_replace('/#/', '0x', param('appmainalpha')).
 		"&slidercolor=".preg_replace('/#/', '0x', param('appslidercolor')).
 		"&phpsessid=".session_id().
+		"&autosave=".param('appautosave').
+		"&servername=".$_SERVER['HTTP_HOST'].
 		"&connect=".getPlayerConnect().
+		"&connectrtmpt=".getPlayerConnectRtmpt().
 		"&connecthttp=".getFullServerName();
 
 //	debuglog($flashvars);

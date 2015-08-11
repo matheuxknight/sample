@@ -1,7 +1,7 @@
 <?php
 
 //debuglog($_SERVER['REQUEST_URI']);
-require('data.php');
+include 'data.php';
 include "variables.php";
 
 header('Content-type: text/csv');
@@ -32,7 +32,7 @@ foreach($sessions as $model)
 {
 	$user = getdbo('User', $model['userid']);
 	$file = getdbo('VFile', $model['fileid']);
-	$course = getRelatedCourse($file, $user);
+	$course = getRelatedCourse($file, $user, $semester);
 		
 	$count = preg_match_all('/\$([a-z]+)\.([a-z]+)/', $export->dataformat, $matches);
 	$a = CustomGetValueTable($export, $user, $file, $course, $model);

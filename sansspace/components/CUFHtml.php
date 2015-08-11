@@ -29,14 +29,14 @@ class CUFHtml extends CHtml
         foreach($errors as $error)
         {
           if($error!='')
-            $content.="<li><a href=\"#error_$attribute\">$error</a></li>\n";
+            $content.="$error\n";
         }
       }
     }
     if($content!=='')
     {
-      $header='<h3>'.Yii::t('yii','Please fix the following input errors:').'</h3>';
-      return self::tag('div',array('id'=>self::$errorSummaryCss),$header."\n<ol>\n$content</ol>".$footer);
+      $header='<h3>'.Yii::t('yii','Please fix the following errors:').'</h3>';
+      return self::tag('div',array('id'=>self::$errorSummaryCss),$header.$footer);
     }
     else
       return '';

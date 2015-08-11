@@ -216,11 +216,18 @@
                 if (options.autostart) {
                     $(this).bind('change', upload);
                 }
-                for (event in available_events) {
-                    if (options[available_events[event]]) {
-                        $(this).bind("html5_upload."+available_events[event], options[available_events[event]]);
-                    }
-                }
+//                for (event in available_events) {
+//                    if (options[available_events[event]]) {
+//                        $(this).bind("html5_upload."+available_events[event], options[available_events[event]]);
+//                    }
+//                }
+                var $that=$(this);
+                $.each(available_events, function(i,v) {
+                	if (options[available_events[i]]) {
+                		$that.bind("html5_upload." + available_events[i], options[available_events[i]]);
+                	}
+                });
+                
                 $(this)
                     .bind('html5_upload.start', upload)
                     .bind('html5_upload.cancelOne', function() {

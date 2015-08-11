@@ -6,11 +6,15 @@ var SansspacePlayer =
 {
 	mouseisdown: false,
 	id: 0,
+	objectid: 0,
 	
 	init: function(id)
 	{
 		this.id = "#"+id;
-	
+
+		var m = window.location.href.match(/id=(\d+)/);
+		this.objectid = m[1];
+
 		document.onmouseup = $.proxy(this.mouseup, this);
 		document.onmousemove = $.proxy(this.mousemove, this);
 		window.onbeforeunload = $.proxy(this.unload, this);
@@ -42,10 +46,11 @@ var SansspacePlayer =
 
 	unload: function()
 	{
-		var b = $(this.id)[0].CloseApplication();;
+		var b = $(this.id)[0].CloseApplication();
 		if(!b) return 'Your recording has not been saved to the server. '+
-			'Do not leave this page if you want save your recording. '+
 			'If you leave this page now, you will loose your current recording.';
+		
+		$.ajax({url: '/object/leavepage?id='+this.objectid, async: false});
 	}
 };
 

@@ -51,7 +51,7 @@ END;
 $getflash = mainimg('getflash.jpg');
 $flashvars = "courseid=$course->id";
 
-ShowApplication($flashvars, 'recorder', $appid, '100%');
+ShowApplication($flashvars, 'player', $appid, '100%');
 JavascriptReady("RightClick.init('$appid');");
 
 echo "</body></html>";

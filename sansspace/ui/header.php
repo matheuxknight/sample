@@ -26,6 +26,39 @@ function showTopHeaderMenu()
 	$user = getUser();
 	echo "<div id='headermenu'> ";
 
+	if(IsMobileDevice() && !IsMobileEmbeded())
+	{
+// 		$returnurl = preg_replace('/&.*$/', '', $_SERVER['REQUEST_URI']);
+		
+// 		$appheadcolor = param('appheadercolor');
+// 		$appheadback = param('appheaderback');
+// 		$customcolor2 = currentPageColor2();
+		
+// 		if(!empty($customcolor2))
+// 			$appheadback = $customcolor2;
+			
+// 		$flashvars = 
+// 			"&headercolor=".preg_replace('/#/', '0x', $appheadcolor).
+// 			"&headerback=".preg_replace('/#/', '0x', $appheadback).
+// 			"&maincolor=".preg_replace('/#/', '0x', param('appmaincolor')).
+// 			"&mainback=".preg_replace('/#/', '0x', param('appmainback')).
+// 			"&mainalpha=".preg_replace('/#/', '0x', param('appmainalpha')).
+// 			"&slidercolor=".preg_replace('/#/', '0x', param('appslidercolor')).
+// 			"&phpsessid=".session_id().
+// 			"&returnurl=".getFullServerName().$returnurl.
+// 			"&servername=".$_SERVER['HTTP_HOST'].
+// 			"&connect=".getPlayerConnect().
+// 			"&connectrtmpt=".getPlayerConnectRtmpt().
+// 			"&connecthttp=".getFullServerName().
+// 			"&autosave=".param('appautosave').
+// 			"&bookmarkprefix=".param('bookmarkprefix');
+		
+// 		$mode = 'browser';
+// 		echo "<a href='javascript:window.location=\"sansspace:mode=$mode&$flashvars\"'>Mobile App</a> | ";
+
+		echo "<a href='/site/startmobileapp'>Mobile App | </a>";
+	}
+	
 	if(param('linkname1') != '' && param('linkurl1') != '')
 		echo l(param('linkname1'), param('linkurl1'), array('target'=>'_blank'))." | ";
 
@@ -76,20 +109,8 @@ function showTopHeaderMenu()
 		
 		if(controller()->rbac->globalAdmin())
 			echo l("Who's Online", array('user/online'), array('id'=>'whos_online'))." | ";
-			
-			
-		if(url('site/login')){
-		echo l("Logout ($user->name)", array('site/logout'))." |";
-		echo "<a href='http://shop.waysidepublishing.com/collections/learning-site-subscriptions' target='_blank' class='shoplink' >
-		<font id='shoplink'>Shop  </font><div class='cart'></div></a>";
-		}
 		
-		else
-		{
 		echo l("Logout ($user->name)", array('site/logout'));
-		}
-		
-
 	}
 
 	echo "</div>";

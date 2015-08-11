@@ -166,16 +166,32 @@ function createCourseEnrollment($userid, $roleid, $objectid, $courseid=0)
 function createEnrollmentFromCourse($user, $object)
 {
 //	debuglog("createEnrollmentFromCourse $object->name");
-	$course = getContextCourse();
-	if(!$course) return false;
+
+	$courseid = getContextCourseId();
+	if(!$courseid) return false;
+// 	{
+// 		$parent = $object->parent;
+// 		while($parent)
+// 		{
+// 			if($parent->type == CMDB_OBJECTTYPE_COURSE)
+// 			{
+// 				$courseid = $parent->id;
+// 				break;
+// 			}
+				
+// 			$parent = $parent->parent;
+// 		}
+
+// 		if(!$courseid) return false;
+// 	}
 	
-	$e = isCourseEnrolled($user->id, $object->id, $course->id);
+	$e = isCourseEnrolled($user->id, $object->id, $courseid);
 	if($e) return true;
 	
-	$e = isCourseEnrolled($user->id, $course->id);
+	$e = isCourseEnrolled($user->id, $courseid);
 	if(!$e) return false;
 
-	createCourseEnrollment($user->id, $e->roleid, $object->id, $course->id);
+	createCourseEnrollment($user->id, $e->roleid, $object->id, $courseid);
 //	userRecordingFolder($object, $user);
 	
 	return true;

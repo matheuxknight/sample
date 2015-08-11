@@ -28,8 +28,11 @@ function ShowApplication($flashvars, $mode, $name, $height, $showresize=true)
 		"&slidercolor=".preg_replace('/#/', '0x', param('appslidercolor')).
 		"&phpsessid=".session_id().
 		"&returnurl=".getFullServerName().$returnurl.
+		"&servername=".$_SERVER['HTTP_HOST'].
 		"&connect=".getPlayerConnect().
+		"&connectrtmpt=".getPlayerConnectRtmpt().
 		"&connecthttp=".getFullServerName().
+		"&autosave=".param('appautosave').
 		"&bookmarkprefix=".param('bookmarkprefix');
 	
 //	debuglog($_SERVER['REQUEST_URI']);
@@ -46,11 +49,12 @@ function ShowApplication($flashvars, $mode, $name, $height, $showresize=true)
 			ret['event'] = 'invoke';
 			ret['mode'] = '$mode';
 			ret['flashvars'] = 'sansspace:mode=$mode&$flashvars';
-			document.location = '$prot'+JSON.stringify(ret);");
+			document.location = '$prot' + JSON.stringify(ret);");
 	}
 	
 	else if(preg_match('/ipad/i', $agent) || preg_match('/iphone/i', $agent))
 	{
+		// todo: check if already installed
 		echo '<br>';
 		echo "<a href='https://itunes.apple.com/app/sansspace/id630654357'>";
 		echo mainimg('install-ipad.jpg').'<br>';
@@ -62,15 +66,15 @@ function ShowApplication($flashvars, $mode, $name, $height, $showresize=true)
 	else if(preg_match('/android/i', $agent))
 	{
 		echo '<br>';
-		echo l(mainimg('install-android.jpg', '', 
-			array('width'=>64))."<br>Install Android Application", array('/site/installandroid')).'<br>';
 
+		echo "<a href='javascript:window.location=\"sansspace:mode=$mode&$flashvars\"'>I already have the Android Application - Launch File<br>";
+		
+ 		echo l(mainimg('install-android.jpg', '', array('width'=>64)).
+ 			"<br>Install Android Application", array('/site/installandroid')).'<br>';
+		
 		echo "<p>Before installing the sansspace android application from the link above, you need to allow ".
 			"installation of apps from sources other than the Play Store.</p>".
 			"<p>You will find this Android Settings under Security as \"Unknown Sources\".</p>";
-
-		echo "<iframe frameborder=0 src='sansspace:mode=$mode&$flashvars' width=1 height=1 >";
-	//	debuglog("sansspace:mode=$mode&$flashvars");
 	}
 	
 	else
@@ -85,14 +89,15 @@ END;
 		
 		if($showresize)
 		{
-			$color = param('appmainback');
+			$color = '#e7e7e7';	//param('appmainback');
 			echo "<div id='handleBottom' onmousedown='SansspacePlayer.mousedown();' 
 				style='width:100%;height:5px;background-color:$color;cursor:s-resize;'></div>";
 		}
 
 		echo <<<END
 <script>
-$(function(){
+$(function()
+{
 var params = {};
 params.allowscriptaccess = "sameDomain";
 params.allowfullscreen = "true";
@@ -113,6 +118,59 @@ END;
 		JavascriptReady("SansspacePlayer.init('$name')");
 	}
 	
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+
+function SetAppHeaderColors()
+{
+//	debuglog('sending header colors');
+	$prot = '';
+	if(preg_match('/android/i', $_SERVER['HTTP_USER_AGENT']))
+		$prot = 'unknown:/';
+
+	echo <<<end
+<script>
+
+var hexDigits = new Array("0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f");
+
+function rgb2hex(rgb)
+{
+	rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+	return "0x" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
+}
+
+function hex(x)
+{
+	return isNaN(x) ? "00" : hexDigits[(x - x % 16) / 16] + hexDigits[x % 16];
+}
+
+$(function()
+{
+	var color = $('footer').css('color');
+	var back = $('footer').css('background-color');
+
+	if(!color || !back)
+	{
+		color = $('.ui-state-default').css('color');
+		back = $('.ui-state-default').css('background-color');
+	}
+
+	if(color && back)
+	{
+		color = rgb2hex(color);
+		back = rgb2hex(back);
+
+		var ret = new Object;
+	 	ret['method'] = 'headerColor';
+	 	ret['color'] = color;
+	 	ret['back'] = back;
+	 	document.location = '$prot' + JSON.stringify(ret);
+	}
+});
+
+</script>
+end;
 }
 
 

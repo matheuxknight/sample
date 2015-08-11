@@ -5,7 +5,7 @@ function fileCreateData($parentid, $data, $data2)
 	$object = new Object;
 	$object->attributes = $data;
 	$object->type = CMDB_OBJECTTYPE_FILE;
-
+	
 	if(empty($object->name))
 		$object->name = 'unknown';
 
@@ -77,7 +77,7 @@ function fileCreateData($parentid, $data, $data2)
 			//	debuglog($buffer);
 				
 				$b = preg_match('/<title>(.*?)<\/title>/si', $buffer, $match);
-				if($b) $object->name = decode_string($match[1]);
+				if($b) $object->name = trim(decode_string($match[1]));
 			}
 
 			$urlparts = parse_url($object->pathname);

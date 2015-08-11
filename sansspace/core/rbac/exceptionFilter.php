@@ -33,7 +33,6 @@ function RbacFilterException($controller, $action)
 		case 'pm':		// TODO: HERE: permissions for show=id
 		case 'report':
 		case 'my':
-		case 'recorder':
 		case 'survey':
 		case 'flashcard':
 			if(user()->isGuest)
@@ -41,19 +40,26 @@ function RbacFilterException($controller, $action)
 
 			return true;
 
+		case 'recorder':
+			if(user()->isGuest)
+				return false;
+			
+			if($action == 'record') return false;
+			return true;
+				
 		case 'file':
 			if(	$action == 'saverecording' ||
-			$action == 'newrecording' ||
-			$action == 'record' && !isset($_GET['id']))
+				$action == 'newrecording' ||
+				$action == 'record' && !isset($_GET['id']))
 				return true;
 			break;
 
 		case 'user':
 			if(	$action == 'recover' ||
-			$action == 'online' ||
-			$action == 'menuuser' ||
-			$action == 'autoCompleteLookup' ||
-			$action == 'autoCompleteLookup2')
+				$action == 'online' ||
+				$action == 'menuuser' ||
+				$action == 'autoCompleteLookup' ||
+				$action == 'autoCompleteLookup2')
 				return true;
 			break;
 

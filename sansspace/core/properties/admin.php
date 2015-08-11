@@ -82,6 +82,12 @@ function objectShowPropertiesAdmin($object, $update)
 	echo CUFHtml::activeCheckBox($object, 'frontpage', array('class'=>'miscInput'));
 	echo "<p class='formHint2'>An overview of this page will show on the home page.</p>";
 	echo CUFHtml::closeCtrlHolder();
+
+	//echo CUFHtml::openActiveCtrlHolder($object, 'exempt');
+	//echo CUFHtml::activeLabelEx($object, 'exempt');
+	//echo CUFHtml::activeTextField($object, 'exempt');
+	//echo "<p class='formHint2'>An overview of this page will show on the home page.</p>";
+	//echo CUFHtml::closeCtrlHolder();
 	
 	if($object->folderimport)
 	{
@@ -104,7 +110,7 @@ function objectShowPropertiesAdmin($object, $update)
 			echo CUFHtml::openActiveCtrlHolder($object, 'pathname');
 			echo CUFHtml::activeLabelEx($object, 'pathname');
 			echo CUFHtml::activeTextField($object, 'pathname', array('maxlength'=>200));
-			echo "<p class='formHint2'>Internal filename.</p>";
+			echo "<p class='formHint2'>Internal filename on disk relative to folder import if any.</p>";
 			echo CUFHtml::closeCtrlHolder();
 		}
 		

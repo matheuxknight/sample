@@ -8,11 +8,11 @@ function showFolderContents($id)
 	if(!$defaultsort || empty($defaultsort) || $defaultsort == 'null')
 		$defaultsort = param('defaultorder');
 	
-//	debuglog($defaultsort);
+//	debuglog("defaultsort $defaultsort");
 
-	$noheader = '';
-	if(IsMobileEmbeded())
-		$noheader = "&noheader";
+//	$noheader = '';
+//	if(IsMobileEmbeded())
+//		$noheader = "&noheader";
 
 	if(intval($id))
 	{
@@ -24,7 +24,7 @@ function showFolderContents($id)
 				echo <<<END
 <div id='results'></div>
 <script>$(function(){
-	$.get("/html/objectresults&id=$id&sort={$defaultsort}{$noheader}",
+	$.get("/html/objectresults&id=$id&sort={$defaultsort}",
 	function(data){ $('#results').append(data);});});
 </script>
 END;
@@ -49,10 +49,7 @@ END;
 		$_GET['recursive'] = 'true';
 	}
 
-	$cookie = Yii::app()->request->cookies['sansspace_format'];
-	if($cookie) $format = $cookie->value;
-	else $format = 'showsmall';
-	
+	$format = user()->getState('layout');
 	$defaultfilter = '-1';
 
 	///////
@@ -60,7 +57,6 @@ END;
 	if(intval($id))
 	{
 		$object = getdbo('Object', $id);
-
 		if($object)
 		{
 			if(controller()->action->id == 'recents')
@@ -91,7 +87,7 @@ END;
 			}
 		}
 		
-//		debuglog($defaultsort);
+	//	debuglog("defaultsort $defaultsort");
 	}
 
 	///////
@@ -110,12 +106,12 @@ END;
 		Semester::model()->options, array('title'=>'Filter by semester'));
 	
 	$extrastyle = '';
-	if(!controller()->rbac->globalAdmin())
+	if(!controller()->rbac->globalAdmin() && param('theme') == 'wayside')
 		$extrastyle = 'display: none; height: 0px; width: 0px;';
 		
 	echo <<<END
 
-	<div id="searchdiv" style="$extrastyle">
+	<div id="searchdiv" style="$extrastyle margin-top:10px" >
 	<input type="checkbox" id="showpanel" $allchecked />
 		<label for="showpanel" title="Search from this folder">Filters</label>
 
@@ -169,7 +165,7 @@ END;
 	<p style='margin-left: 300px;'>$loading_image</p>
 	</div>
 
-<script>initSearchBar('$id', '$searchtitle', '$format', '$defaultsort', '$semesterid', '$defaultfilter', '$noheader');</script>
+<script>initSearchBar('$id', '$searchtitle', '$format', '$defaultsort', '$semesterid', '$defaultfilter');</script>
 
 END;
 

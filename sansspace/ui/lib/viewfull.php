@@ -75,10 +75,10 @@ function showObjectItemFull($object)
 		$teachername = $object->course->getTeacherName();
 		$teacher = getdbosql('Role', "name='teacher'");
 		if(!empty($teachername))
-			echo "$teacher->description: <b>&nbsp;$teachername</b>";
+			echo "$teacher->description : <b>&nbsp;$teachername</b><br>";
 			
 		if($object->course->semester)
-			echo "Semester: <b>{$object->course->semester->name}</b>";			
+			echo "Semester: <b>{$object->course->semester->name}</b><br>";			
 	}
 	
 	echo "</div>";

@@ -19,26 +19,40 @@ function showUserHeader($user, $title, $url=null)
 
 function showRoleBar($object)
 {
-	if(!param('showrole')) return;
-//	debuglog("showRoleBar($object->name)");
+	echo "<span class='role'>";
 	
-	echo "<span class='role'>Global: ";
-	$roles = controller()->rbac->globalRoles();
-	foreach($roles as $roleid)
+	if(controller()->rbac->globalAdmin())
 	{
-		$role = getdbo('Role', $roleid);
-		echo "<b>$role->name, </b> ";
+		$course = getContextCourse();
+		if($course && $course->id != controller()->object->id)
+		{
+			echo objectImage($course, 18);
+			echo "<b> Go to Textbook </b>";
+			
+			echo l(mainimg('16x16_link.png'), 'javascript:clear_context_course()', array('title'=>'Go to Textbook'));
+			echo <<<END
+<script>
+function clear_context_course()
+{
+	window.location.href = '/object/clearcontextcourse?id=$object->id';
+}
+</script>
+END;
+		}
 	}
-	echo "</span><br>";
-
-	echo "<span class='role'>Object: ";
-	$roles = controller()->rbac->objectRoles($object);
-	foreach($roles as $roleid)
+	
+	if(param('showrole'))
 	{
-		$role = getdbo('Role', $roleid);
-		if(!$role) debuglog("role not found $roleid");
-		echo "<b>$role->name, </b> ";
+		echo "role: ";
+		$roles = controller()->rbac->objectRoles($object);
+		foreach($roles as $roleid)
+		{
+			$role = getdbo('Role', $roleid);
+			if(!$role) continue;
+			echo "<b>$role->name, </b> ";
+		}
 	}
+	
 	echo "</span>";
 }
 
@@ -56,7 +70,7 @@ function showNavigationBar($object, $action = "")
 	function findcoursemodel($user, $object, $parentlist)
 	{
 //		debuglog("  findcoursemodel({$object->parent->name}/$object->name)");
-		$courseid = user()->getState('courseid');
+		$courseid = getContextCourseId();
 		foreach($user->courseenrollments as $enrollment)
 		{
 			if($enrollment->object->type != CMDB_OBJECTTYPE_COURSE) continue;
@@ -108,12 +122,10 @@ function showNavigationBar($object, $action = "")
 	$parentlist = array();
 	$parent = $object;
 	$user = getUser();
-	
-	$course = getdbo('VCourse', user()->getState('courseid'));
-//	debuglog("context course $course->id");
+
+	$course = getContextCourse();
 	while($parent !== null)
 	{
-//		debuglog("parent {$parent->parent->name}/$parent->name");
 		if(!controller()->rbac->objectAction($parent))
 		{
 			if($parent->recordings)
@@ -136,18 +148,24 @@ function showNavigationBar($object, $action = "")
 		if(!$parent) break;
 		if(!controller()->rbac->objectAction($parent)) break;
 		
-		if(	$course && 
-			$course->parentid == $parent->id && 
-		//	$course->id == $parent->id && 
-			$course->id != controller()->object->id)
+		if($course && $parent->model && isCourseHasObject($course, $parent))
 		{
-		//	debuglog("  adding {$course->parent->name}/$course->name");
 			array_unshift($parentlist, $course);
+			$course = null;
+			
+			if(!controller()->rbac->globalAdmin())
+				break;
 		}
 		
-	//	debuglog("  adding {$parent->parent->name}/$parent->name");
+		if(	$course && 
+			$course->parentid == $parent->id && 
+			$course->id != controller()->object->id)
+		{
+			array_unshift($parentlist, $course);
+		//	break;
+		}
+				
 		array_unshift($parentlist, $parent);
-		
 		$parent = $parent->parent;
 	}
 	
@@ -161,6 +179,8 @@ function showNavigationBar($object, $action = "")
 	echo "<div id='mynavigationmenu' class='navigationmenu'><ul>";
 	foreach($parentlist as $n=>$model)
 	{
+		if($n && $parentlist[$n-1]->id == $model->id) continue;
+		
 		$model = filterRecordingName($model);
 		echo "<li id=$model->id>";
 		
@@ -176,22 +196,7 @@ function showNavigationBar($object, $action = "")
 	}
 	
 	echo "</ul>";
-	echo "</ul>&nbsp;&nbsp;<a href='#' id='popuplink'><em style='color:#ec4546; font-size:16px; verticle-align:middle' class='fa fa-question-circle'></em></a>";
 	echo "<br style='clear: left' /></div>";
-	
-echo <<<end
-<script type="text/javascript">
-	$(document).ready(function() 
-{
-	$('#popup').dialog({ autoOpen: false, modal: true, width: '40%', dialogClass:'modalpopup' })
-	$('#popuplink').click(function(){ $('div#popup').dialog('open'); });
-})
-</script>
-<div id="popup" title="Breadcrumbs"> 
-	    <p style='font-size:20px' autofocus>This list of links (i.e. breadcrumbs) show you where you are in the Learning Site.</p> 
-	    <p style='font-size:16px'>Click on any section to go to it immediately.</p> 
-</div> 
-end;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -214,7 +219,7 @@ function showObjectHeader($object)
 	
 	echo "<td id='object_{$object->id}_parent'>";
 	showObjectMenuContext($object);
-
+	
 	echo "<div class='small'>";
 	
 	if(!empty($object->tags))
@@ -224,7 +229,7 @@ function showObjectHeader($object)
 	echo "</div>";
 	
 	echo "</td>";
-	echo "</td></table></td>";
+	echo "</tr></table></td>";
 	
 	if($object->post)
 	{

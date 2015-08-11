@@ -34,6 +34,7 @@ while(($name = readdir($res)) !== false)
 	$files[$filetime] = array($name, $filetime, $filesize);
 }
 
+closedir($res);
 ksort($files);
 
 foreach($files as $file)

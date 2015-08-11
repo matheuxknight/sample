@@ -51,6 +51,12 @@ if($users == $searchusers) $users = '';
 
 $objectid = getparam('objectid');
 $semesterid = getparam('semesterid');
+
+if($semesterid)
+	$semester = getdbo('Semester', $semesterid);
+else
+	$semester = getCurrentSemester();
+	
 $year = getparam('year');
 $month = getparam('month');
 $other = getparam('other');

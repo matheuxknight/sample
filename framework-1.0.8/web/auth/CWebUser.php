@@ -294,8 +294,8 @@ class CWebUser extends CApplicationComponent implements IWebUser
 			
 			///// SANSSPACE MOD
 			
-			else if(IsMobileEmbeded())
-				$url .= "&noheader";
+		//	else if(IsMobileEmbeded())
+		//		$url .= "&noheader";
 			
 			$request->redirect($url);
 		}
@@ -506,6 +506,7 @@ class CWebUser extends CApplicationComponent implements IWebUser
 	 */
 	protected function changeIdentity($id,$name,$states)
 	{
+	//	debuglog("changeIdentity($id,$name)");
 		$this->setId($id);
 		$this->setName($name);
 		$this->loadIdentityStates($states);

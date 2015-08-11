@@ -134,6 +134,23 @@ function fileShowProperties($file)
 		echo CUFHtml::activeTextField($file, 'pathname', array('maxlength'=>200));
 		echo "<p class='formHint2'>Http url to an internet web page.</p>";
 		echo CUFHtml::closeCtrlHolder();
+		
+		echo CUFHtml::openActiveCtrlHolder($file, 'http_proxy');
+		echo CUFHtml::activeLabelEx($file, 'http_proxy');
+		echo CUFHtml::activeCheckBox($file, 'http_proxy', array('class'=>'miscInput'));
+		echo "<p class='formHint2'>Use the Sansspace http proxy to access the site.</p>";
+		echo CUFHtml::closeCtrlHolder();
+		
+		echo CUFHtml::openActiveCtrlHolder($file->ext, 'custom');
+		echo CUFHtml::activeLabelEx($file->ext, 'custom');
+		echo CUFHtml::activeHiddenField($file->ext, 'custom');
+
+		if(!empty($file->ext->custom))
+			echo "<div class='textInput sans-text'>".getTextTeaser($file->ext->custom)."</div>";
+		
+		showTextEditorButton('ObjectExt_custom');
+		echo "<p class='formHint2'>Click to edit the custom data for this site.</p>";
+		echo CUFHtml::closeCtrlHolder();
 	}
 
 	echo CUFHtml::openActiveCtrlHolder($file, 'originalid');
@@ -150,4 +167,6 @@ function fileShowProperties($file)
 		
 	echo "</div>";	
 }
+
+
 

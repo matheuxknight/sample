@@ -134,7 +134,9 @@ class ExportController extends CommonController
 	{
 		include "variables.php";
 		
+		$semester = getCurrentSemester();
 		$export = $this->loadexport();
+		
 		switch($export->autotype)
 		{
 			case CMDB_EXPORTAUTOTYPE_24H:
@@ -148,7 +150,6 @@ class ExportController extends CommonController
 				break;
 				
 			case CMDB_EXPORTAUTOTYPE_SEMESTER:
-				$semester = getCurrentSemester();
 				$startreport = strtotime($semester->starttime);
 				break;
 		}
@@ -184,7 +185,7 @@ class ExportController extends CommonController
 		{
 			$user = getdbo('User', $model['userid']);
 			$file = getdbo('VFile', $model['fileid']);
-			$course = getRelatedCourse($file, $user);
+			$course = getRelatedCourse($file, $user, $semester);
 			
 			$count = preg_match_all('/\$([a-z]+)\.([a-z]+)/', $export->dataformat, $matches);
 			$a = CustomGetValueTable($export, $user, $file, $course, $model);

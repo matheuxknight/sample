@@ -18,7 +18,10 @@ function userCreate($logon, $name, $email, $domainid)
 	$user->used = now();
 	$user->startdate = nowDate();
 	$user->enddate = nowDate();
-	$user->save();
+
+	$b = $user->save();
+	if(!$b) debuglog("new user save failed");
+	
 	return $user;
 }
 

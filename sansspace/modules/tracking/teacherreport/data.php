@@ -67,7 +67,9 @@ $searchfiles = 'Search files';
 $objectid = getparam('id');
 $object = getdbo('Object', $objectid);
 
-$course = getContextCourse();
+$course = $object->course;
+if(!$course) $course = getContextCourse();
+
 $semester = $course->semester;
 if(!$semester) $semester = getCurrentSemester();
 

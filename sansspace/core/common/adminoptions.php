@@ -111,6 +111,9 @@ function getAdminOptions()
 
 		array('name'=>'Cron Jobs', 'url'=>array('cronjob/'),
 			'description'=>'Manage the cron jobs on this server.'),
+        
+        array('name'=>'Announcements', 'url'=>array('admin/announcement/'),
+			'description'=>'Manage Announcements displayed to users.'),
 
 	),),
 

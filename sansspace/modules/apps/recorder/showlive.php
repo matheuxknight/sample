@@ -37,7 +37,7 @@ $getflash = mainimg('getflash.jpg');
 $flashvars = "live=1&fileid=$file->id&channel=1";
 
 ShowApplication($flashvars, 'player', $appid, '100%');
-JavascriptReady("RightClick.init('$appid');");
+//JavascriptReady("RightClick.init('$appid');");
 
 echo "</body></html>";
 

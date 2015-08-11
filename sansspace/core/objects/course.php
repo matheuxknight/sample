@@ -106,7 +106,7 @@ function courseDelete($course)
 	dborun("delete from SurveyAnswer where courseid=$course->id");
 	dborun("delete from QuizAttemptAnswer where id in (select id from QuizAttempt where courseid=$course->id)");
 	dborun("delete from QuizAttempt where courseid=$course->id");
-	
+
 	$rcourse = getdbo('Course', $course->id);
 	if(!$rcourse) return;
 	

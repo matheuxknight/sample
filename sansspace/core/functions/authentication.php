@@ -7,17 +7,22 @@ class SansspaceIdentity
 	
 	public function __construct()
 	{
+	user(); //quick fix
 	//	debuglog("SansspaceIdentity::__construct");
 		if(strstr($_SERVER['REQUEST_URI'], 'internaluser=system')) return;
 		if(strstr($_SERVER['REQUEST_URI'], '/sansspacehost/')) return;
 		
-		$phpsessid = getparam('phpsessid');
-		if($phpsessid)
+		$phpsessid = isset($_REQUEST['phpsessid'])? $_REQUEST['phpsessid']: '';
+	//	if(empty($phpsessid) && isset($_COOKIE['PHPSESSID']))
+	//		$phpsessid = $_COOKIE['PHPSESSID'];
+		
+	//	debuglog("phpsessid is $phpsessid");
+		if(!empty($phpsessid))
 		{
-			$this->session = getdbosql('Session', "phpsessid='$phpsessid'");
-			session_id($phpsessid);
+		//	debuglog("phpsessid2 is $phpsessid");
 			
-			if(userid() != $this->session->userid)
+			$this->session = getdbosql('Session', "phpsessid='$phpsessid'");
+			if($this->session && userid() != $this->session->userid)
 			{
 				$user = getdbo('User', $this->session->userid);
 				$this->authorize($user);
@@ -113,7 +118,7 @@ class SansspaceIdentity
 			if($user) return $user;
 		}
 		
-		return $this->error('Invalid credentials');
+		return $this->error('We\'re sorry, the username and password you provided were incorrect.<br>Please use the <a href="../site/forgot">"Forgot your username or password?"</a> feature to determine your credentials if you continue to experience login problems.');
 	}
 
 	public function validate($user)
@@ -212,7 +217,7 @@ class SansspaceIdentity
 		
 		$duration = $remember? 3600*24*30: 0; // 30 days
 		user()->login($identity, $duration);
-
+		
 	//	updateAutoEnrollment($user);
 		createPersonalFolder($user);
 		updatePersonalRole($user);
@@ -221,7 +226,24 @@ class SansspaceIdentity
 		$this->session->isguest = false;
 		$this->session->save();
 		
+		session_id($this->session->phpsessid);
+		session_start();
+		setcookie('PHPSESSID', $this->session->phpsessid, 0, '/');
 		setUser($user);
+		
+		$agent = $_SERVER['HTTP_USER_AGENT'];
+		if(IsMobileEmbeded() && preg_match('/android/i', $agent))
+		{
+			$extraScript = "<script>$(function(){
+					var ret = new Object;
+					ret['method'] = 'androidConnect';
+					ret['phpsessid'] = '{$this->session->phpsessid}';
+					document.location = 'unknown:/' + JSON.stringify(ret);
+				});</script>";
+			
+			$extraScript = urlencode($extraScript);
+			setcookie('login_extrascript', $extraScript, 0, '/');
+		}
 
 		// logoff anyone else with same userid 
 		if(param('singlelogin'))
@@ -246,7 +268,8 @@ class SansspaceIdentity
 			}
 		}
 		
-	//	user()->setFlash('message', 'Login successful');
+		user()->setFlash('message', 'Login successful');
+	//	debuglog("SansspaceIdentity::authorize($user->logon) - end");
 		return $user;
 	}
 
@@ -309,6 +332,8 @@ class SansspaceIdentity
 			$username = addslashes($_POST['user']);
 			$password = $_POST['pass'];
 
+		//	debuglog("SansspaceIdentity::attemptlogin $username, $password");
+			
 			$user = $this->authenticate($username, $password);
 			$user = $this->validate($user);
 			$user = $this->authorize($user);

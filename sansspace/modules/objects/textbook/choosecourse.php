@@ -1,8 +1,17 @@
 <?php
 
+$textbook = $code->object;
+$listcount = getdbocount('VCourse', "parentid=$code->objectid");
 
-echo "<h2>Choose my course    <a href='#' id='popuplink'><em style='color:#ec4546; font-size:16px; verticle-align:middle' class='fa fa-question-circle'></em></a></h2>";
-echo "Courses available for this code: <b>$code->code</b><br><br>";
+echo "<h2>Choose my course</h2>";
+echo "Courses available for this code: <b>$code->code</b><br>";
+
+echo "<table width='100%' class='sstitle'><tr>";
+echo "<td width=56>";
+echo objectImage($textbook);
+echo "</td>";
+echo "<td>$textbook->name</td>";
+echo "</tr></table>";
 
 echo CUFHtml::label('Search: ', '').' ';
 echo CUFHtml::textField('course_search_input', '', array('class'=>'textInput', 'maxlength'=>200));
@@ -11,19 +20,21 @@ echo "(Course, Teacher, School, City, State, ZIP Code, or Country)<br><br>";
 
 echo <<<end
 
-<div id='show_results'></div>
+<div id='show_results'>$listcount matches</div>
 
 <script>
 $(function()
 {
-	$.get('/textbook/choosecourse_results?code=$code->code', '', function(data)
-	{
-		$('#show_results').html(data);
-	});
+//	$.get('/textbook/choosecourse_results?code=$code->code', '', function(data)
+//	{
+//		$('#show_results').html(data);
+//	});
 
 	$('#course_search_input').bind('keyup', function(event)
 	{
 		var searchstring = $('#course_search_input').val();
+		if(searchstring == '') return;
+		
 		$.get('/textbook/choosecourse_results?code=$code->code&search='+searchstring, '', function(data)
 		{
 			$('#show_results').html(data);
@@ -31,31 +42,13 @@ $(function()
 	})
 });
 
-function doenrollment(code, courseid, coursename, teachername)
+function doenrollment(code, courseid)
 {
-	if(confirm("Are you sure you want to enroll into this course? "+coursename+", Teacher "+teachername+". This action cannot be undone."))
-		window.location.href='/my';
+	if(confirm("Are you sure you want to enroll into this course? This action cannot be undone."))
+		window.location.href='/textbook/studentenroll?code='+code+'&courseid='+courseid;
 }
 
 </script>
-
-
-</script>
-<script type="text/javascript">
-	$(document).ready(function() 
-{
-	$('#popup').dialog({ autoOpen: false, modal: true, width: '40%', dialogClass:'modalpopup' })
-	$('#popuplink').click(function(){ $('div#popup').dialog('open'); });
-})
-</script>
-<div id="popup" title="Choose my course">
-	<p style='font-size:20px' autofocus>Students will use this search to find you.<br>
-	<span style='font-size:16px'>Students can search by course name, teacher, school, city, state, ZIP code, or country. Once students click on your course, they must confirm their choice. Once the choice is confirmed, they have completed enrollment, and the Student Access Code they used will no longer be valid.</span></p>
-	<p style='font-size:16px' autofocus><b>IMPORTANT NOTE</b>: As the teacher, you choose the start date of your course. Your students will not see your course on this list or be able to enroll until the start date. </p>    
-	<p style='font-size:16px'>Click on the <b><u>Learning Site logo</u></b> in the upper left hand corner of the screen to return to the My Learning Site page.<br><b>OR</b><br>
-	Click on a <b><u>course name</u></b> and simulate enrollment in a course, which will then return to the My Learning Site page.</p>
-</div>
-
 end;
 
 

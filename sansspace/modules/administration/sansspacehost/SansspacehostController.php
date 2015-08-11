@@ -223,16 +223,14 @@ class SansspacehostController extends CommonController
 	public function actionPingMaster()
 	{
 	//	debuglog("Sansspacehost::pingmaster");
-	//todo: 
-	//	return;
 		
-		// ugly patch here. should be removed
+		// patch here
 		$guest = getdbosql('User', "logon='guest'");
-		dborun("delete from session where userid=$guest->id");
+		if($guest) dborun("delete from session where userid=$guest->id");
 		
 		sleep(1);
 		$cpuload = GetCpuLoad();
-		//	$netload = Itoa2(GetNetworkLoad());
+	//	$netload = Itoa2(GetNetworkLoad());
 	
 		$data = getSansspaceIdentification();
 		$server = getdbo('Server', 1);
@@ -258,7 +256,6 @@ class SansspacehostController extends CommonController
 			' or status='.CMDB_OBJECTTRANSCODE_QUEUED2.
 			' or status='.CMDB_OBJECTTRANSCODE_QUEUED3);
 	
-		//	$message = "$online users, $queued trans., CPU $cpuload%, NET $netload";
 		$message = "$online1/$online4/$online24/$online7 users, $queued trans., CPU $cpuload%";
 		
 		$postbuffer =

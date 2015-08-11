@@ -14,24 +14,30 @@ class StudentreportController extends CommonController
 			if(!controller()->rbac->objectAction($object, 'teacherreport/'))
 				throw new CHttpException(500, 'Invalid request. Please do not repeat this request again.');
 
-// 			$enrollment = isCourseEnrolled($user->id, $object->id);
-// 			if($enrollment && isset($_POST['CourseEnrollment']))
-// 			{
-// 				$enrollment->attributes = $_POST['CourseEnrollment'];
-// 				$enrollment->save();
+			$enrollment = isCourseEnrolled($user->id, $object->id);
+			if($enrollment && isset($_POST['CourseEnrollment']))
+			{
+				$enrollment->attributes = $_POST['CourseEnrollment'];
+				$enrollment->save();
 								
-// 				user()->setFlash('message', 'Attributes saved.');
-// 				$this->goback();
+				user()->setFlash('message', 'Attributes saved.');
 				
-// 				return;
-// 			}
+//				$this->goback();
+//				return;
+			}
 		}
 		else
 			 $user = getUser();
 		
 		if($object->type == CMDB_OBJECTTYPE_COURSE)
-			$this->render('show_course', array('object'=>$object, 'user'=>$user));
+		{
+			if(param('theme') == 'wayside')
+				$this->render('show_course', array('object'=>$object, 'user'=>$user));
 		
+			else
+				$this->render('show');
+		}
+			
 		else if($object->type == CMDB_OBJECTTYPE_QUIZ)
 			$this->render('show_quiz');
 		

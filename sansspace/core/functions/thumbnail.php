@@ -80,6 +80,23 @@ function mediaThumbnail($file)
 	return $file;
 }
 
+function mediaSoundSamples($file)
+{
+	debuglog("mediaSoundSamples($file->name)");
+	
+	require_once('extensions/ffmpeg/phpvideotoolkit.php5.php');
+
+	$filename = objectPathname($file);
+	$thumbnailpath = objectPathnameSoundSamples($file);
+	
+//	$args = "-i \"$filename\" -f s16be -ar 32 -y \"$thumbnailpath\"";
+
+	$args = "-i \"$filename\" -f s8 -ac 1 -ar 48 -y \"$thumbnailpath\"";
+	debuglog("ffmpeg $args");
+	
+	exec('cmd /c ('.PHPVIDEOTOOLKIT_FFMPEG_BINARY.' '.$args.')');
+}
+
 function mediaThumbnailForPlayer($file)
 {
 	debuglog("mediaThumbnailForPlayer($file->name)");
@@ -103,6 +120,10 @@ function mediaThumbnailForPlayer($file)
 	
 	$d = floor($file->duration/250000)+1;
 	$step = "1/$d";
+	
+	// -ss startpos
+	// -bt bitrate tolerance
+	//
 	
 	$args = "-i \"$filename\" -ss 00:00:02.7 -f image2 -bt 20M -r $step -s $tumbnailsize -y \"$thumbnailpath\\%d.jpg\"";
 	debuglog("ffmpeg $args");

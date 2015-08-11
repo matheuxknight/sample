@@ -10,7 +10,14 @@ if($object->type == CMDB_OBJECTTYPE_LINK && $object->link->type == CMDB_OBJECTTY
 }
 
 if($object->type == CMDB_OBJECTTYPE_TEXTBOOK)
-	user()->setState('courseid', 0);
+	setContextCourse(0);
+
+else
+{
+	$course = getContextCourse();
+	if($course && !isCourseHasObject($course, $object))
+		setContextCourse(0);
+}
 
 showRoleBar($object);
 showNavigationBar($object->parent);

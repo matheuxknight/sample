@@ -14,29 +14,9 @@ function objectDisplayOverview($object)
 
 function objectContentDisplay($object)
 {
-	if(isset($_GET['sort']) && !empty($_GET['sort']))
-	{
-		$order = $_GET['sort'];
-		user()->setState('listsort', $_GET['sort']);
-	}
-	
-	else if(user()->getState('listsort') && !isset($_GET['sort']))
-		$order = user()->getState('listsort');
-	
-	else
-	{
-		$order = 'displayorder, name';
-		user()->setState('listsort', $_GET['displayorder']);
-	}
-	
-	if(isset($_GET['layout']) && $_GET['layout'] != 'undefined')
-	{
-		$format = $_GET['layout'];
-		$cookie = new CHttpCookie('sansspace_format', $format);
-		$cookie->expire = time() + 3600*24*30;
-		Yii::app()->request->cookies['sansspace_format'] = $cookie;
-	}
-	
+	$order = user()->getState('listsort');
+	$format = user()->getState('layout');
+		
 	////////////////////////////////////////////////////////////////
 	
 	$show_divider = false;
@@ -56,8 +36,32 @@ function objectContentDisplay($object)
 		if(count($list))
 		{
 			if($show_divider) echo "<hr>";
-			echo "<b>Courses</b>";
+			echo "<b>Courses</b> ";
+
+			if(count($list) > 100)
+			{
+				$coursesearch = getparam('coursesearch');
+				$list = objectContentList($object, CMDB_OBJECTTYPE_COURSE, $coursesearch);
 			
+				if($coursesearch == 'undefined') $coursesearch = '';
+				echo <<<end
+<input type='text' name='course-search' id='course-search' size='30' class='sans-input' 
+	placeholder='search' value='$coursesearch' /> 
+
+<script>
+	$('#course-search').bind('keyup', function(event)
+	{
+		clearTimeout(this.searching);
+		this.searching = setTimeout(function()
+		{
+			refreshContentPage();
+		}, 1000);
+	});
+
+</script>
+end;
+			}
+
 			showListResult($object->id, $list);
 			$show_divider = true;
 		}
@@ -78,18 +82,21 @@ function objectContentDisplay($object)
 	$parent = $object->parent;
 	while($parent && $parent->model)
 	{
+		$cmdb_link = CMDB_OBJECTTYPE_LINK;
 		$cmdb_course = CMDB_OBJECTTYPE_COURSE;
 		$cmdb_bank = CMDB_OBJECTTYPE_QUESTIONBANK;
 		$cmdb_textbook = CMDB_OBJECTTYPE_TEXTBOOK;
 		
-		$list1 = getdbolist('Object', "parentid=$parent->id and type!=$cmdb_course and type!=$cmdb_bank and type!=$cmdb_textbook order by $order");
+		if(param('theme') == 'wayside')
+			$list1 = getdbolist('Object', "parentid=$parent->id and type!=$cmdb_course and type!=$cmdb_bank and type!=$cmdb_textbook order by $order");
+		else
+			$list1 = getdbolist('Object', "parentid=$parent->id and type=$cmdb_link order by $order");
 		if(count($list1))
 		{
 			if($show_divider) echo "<hr>";
-
-			echo "<p><b>$parent->name</b></p>";
-			echo processDoctext($parent, $parent->ext->doctext);
+			//echo "<p><b>$parent->name</b></p>";
 			
+			echo processDoctext($parent, $parent->ext->doctext);
 			showListResult($object->id, $list1);
 		}
 
@@ -97,7 +104,7 @@ function objectContentDisplay($object)
 	}
 }
 
-function objectContentList($object, $showtype=0)
+function objectContentList($object, $showtype=0, $pattern=null)
 {
 //	debuglog(__METHOD__);
 	
@@ -135,12 +142,18 @@ function objectContentList($object, $showtype=0)
 		$sql .= " and (name like '%{$s}%' or tags like '%{$s}%')";
 	}
 	
+	if($pattern)
+	{
+		debuglog('1');
+		$sql .= " and name like '%{$pattern}%'";
+	}
+	
 	////////////////////////////////////////////////////////////////
 	
 	if(!isset($_GET['filter']))
 		;
 	
-	else if($_GET['filter'] != -1)
+	else if($_GET['filter'] != -1 && $_GET['filter'] != 'undefined')
 		$sql = "type={$_GET['filter']} and $sql";
 
 	else
@@ -154,7 +167,7 @@ function objectContentList($object, $showtype=0)
 	////////////////////////////////////////////////////////////////////////
 	
 //	debuglog("parentid=$object->id and not recordings and $sql order by $order");
-	$courseid = user()->getState('courseid');
+	$courseid = getContextCourseId();
 	
 	$list = getdbolist('Object', "parentid=$object->id and not recordings and $sql order by $order");
 	foreach($list as $i=>$o)
@@ -162,7 +175,7 @@ function objectContentList($object, $showtype=0)
 		if(!controller()->rbac->objectAction($object, 'view'))
 			unset($list[$i]);
 
-		if(!controller()->rbac->objectAction($object, 'update') && ($o->deleted || $o->hidden))
+		if(!controller()->rbac->objectUrl($object, 'teacherreport') && ($o->deleted || $o->hidden))
 			unset($list[$i]);
 
 		if($semesterid>0 && $o->type == CMDB_OBJECTTYPE_COURSE)
@@ -172,7 +185,7 @@ function objectContentList($object, $showtype=0)
 				unset($list[$i]);
 		}
 		
-		if($o->courseid && $o->courseid != $courseid)
+		else if(!$o->recordings && !$o->parent->recordings && $o->courseid && $o->courseid != $courseid)
 			unset($list[$i]);
 	}
 	

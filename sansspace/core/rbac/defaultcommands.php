@@ -53,6 +53,7 @@ define('SSPACE_COMMAND_FILE_INTERNET', 50);
 define('SSPACE_COMMAND_COMMENT_CREATE', 51);
 define('SSPACE_COMMAND_COMMENT_DELETE', 52);
 define('SSPACE_COMMAND_COMMENT_EDIT', 53);
+define('SSPACE_COMMAND_COMMENT_VIEW', 56);
 define('SSPACE_COMMAND_FILE_TEXT', 54);
 define('SSPACE_COMMAND_FILE_YOUTUBE', 55);
 
@@ -87,6 +88,8 @@ define('SSPACE_COMMAND_QUESTION_CREATE', 87);
 define('SSPACE_COMMAND_QUESTION_EDIT', 89);
 define('SSPACE_COMMAND_QUESTION_IMPORTMOODLE', 88);
 define('SSPACE_COMMAND_QUESTION_COPY_QUESTIONS', 90);
+define('SSPACE_COMMAND_QUESTION_DELETE_QUESTION', 91);
+define('SSPACE_COMMAND_QUESTION_PREVIEW_QUESTION', 92);
 
 define('SSPACE_COMMAND_OBJECT_CREATE_FLASHCARD', 103);
 define('SSPACE_COMMAND_FLASHCARD_VIEW', 101);
@@ -118,7 +121,7 @@ function RbacDefaultCommands()
 			
 		array(
 			'id'=>SSPACE_COMMAND_MY,
-			'name'=>'My SANSSpace',
+			'name'=>'My Sansspace',
 			'description'=>'Tab Menu',
 			'url'=>'my/',
 			'roles'=>array(SSPACE_ROLE_USER),
@@ -233,7 +236,7 @@ function RbacDefaultCommands()
 			'icon'=>'/images/base/newfolder.png',
 			'createitem'=>true,
 			'inherit'=>false,
-			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
+			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER, SSPACE_ROLE_OWNER),
 		),
 
 		array(
@@ -244,7 +247,7 @@ function RbacDefaultCommands()
 			'objecttype'=>true,
 			'icon'=>'/images/base/delete.png',
 			'inherit'=>false,
-			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
+			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER, SSPACE_ROLE_OWNER),
 		),
 
 		array(
@@ -293,7 +296,7 @@ function RbacDefaultCommands()
 			'url'=>'object/commandcut',
 			'objecttype'=>true,
 			'inherit'=>false,
-			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
+			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER, SSPACE_ROLE_OWNER),
 		),
 
 		array(
@@ -303,7 +306,7 @@ function RbacDefaultCommands()
 			'url'=>'object/commandpaste',
 			'objecttype'=>true,
 			'inherit'=>false,
-			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
+			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER, SSPACE_ROLE_OWNER),
 		),
 
 		array(
@@ -340,7 +343,7 @@ function RbacDefaultCommands()
 			'icon'=>'/images/base/newfolder.png',
 			'createitem'=>true,
 			'inherit'=>false,
-			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
+			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER, SSPACE_ROLE_FORUM),
 		),
 
 		////////////////////////////////////////////////////////////////////////////////////////
@@ -355,7 +358,7 @@ function RbacDefaultCommands()
 			'icon'=>'/images/base/upload.png',
 			'createitem'=>true,
 			'inherit'=>false,
-			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
+			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER, SSPACE_ROLE_OWNER, SSPACE_ROLE_FORUM),
 		),
 			
 		array(
@@ -368,7 +371,7 @@ function RbacDefaultCommands()
 			'icon'=>'/images/base/record.png',
 			'createitem'=>true,
 			'inherit'=>false,
-			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
+			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER, SSPACE_ROLE_OWNER, SSPACE_ROLE_FORUM),
 		),
 
 		array(
@@ -405,7 +408,7 @@ function RbacDefaultCommands()
 			'objecttype'=>true,
 			'createitem'=>true,
 			'inherit'=>false,
-			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
+			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER, SSPACE_ROLE_OWNER, SSPACE_ROLE_FORUM),
 		),
 			
 		array(
@@ -427,7 +430,7 @@ function RbacDefaultCommands()
 			'objecttype'=>true,
 			'inherit'=>false,
 			'icon'=>'/images/base/delete.png',
-			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
+			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER, SSPACE_ROLE_OWNER),
 		),
 
 		array(
@@ -459,7 +462,7 @@ function RbacDefaultCommands()
 			'url'=>'file/download',
 			'objecttype'=>true,
 			'icon'=>'/images/base/download.png',
-			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
+			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER, SSPACE_ROLE_OWNER),
 		),
 
 		array(
@@ -470,7 +473,7 @@ function RbacDefaultCommands()
 			'url'=>'file/edit',
 			'objecttype'=>true,
 			'inherit'=>false,
-			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
+			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER, SSPACE_ROLE_OWNER),
 		),
 
 		////////////////////////////////////////////////////////////////////////////////////////
@@ -493,7 +496,7 @@ function RbacDefaultCommands()
 			'objecttype'=>true,
 			'icon'=>'/images/base/delete.png',
 			'inherit'=>false,
-			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
+			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER, SSPACE_ROLE_OWNER),
 		),
 
 		array(
@@ -504,7 +507,17 @@ function RbacDefaultCommands()
 			'objecttype'=>true,
 			'icon'=>'/images/base/edit.png',
 			'inherit'=>false,
-			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
+			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER, SSPACE_ROLE_OWNER),
+		),
+
+		array(
+			'id'=>SSPACE_COMMAND_COMMENT_VIEW,
+			'name'=>'View',
+			'description'=>'Comment',
+			'url'=>'comment/',
+			'objecttype'=>true,
+			'inherit'=>true,
+			'roles'=>array(SSPACE_ROLE_USER),
 		),
 
 		////////////////////////////////////////////////////////////////////////////////////////
@@ -783,7 +796,7 @@ function RbacDefaultCommands()
 			
 		array(
 			'id'=>SSPACE_COMMAND_QUESTION_ADMIN,
-			'name'=>'Edit Questions',
+			'name'=>'List Questions',
 			'description'=>'Quiz',
 			'url'=>'question/admin',
 			'objecttype'=>true,
@@ -800,7 +813,7 @@ function RbacDefaultCommands()
 			'inherit'=>false,
 			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
 		),
-			
+
 		array(
 			'id'=>SSPACE_COMMAND_QUESTION_EDIT,
 			'name'=>'Edit Question',
@@ -810,7 +823,27 @@ function RbacDefaultCommands()
 			'inherit'=>false,
 			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
 		),
-			
+
+		array(
+			'id'=>SSPACE_COMMAND_QUESTION_DELETE_QUESTION,
+			'name'=>'Delete Question',
+			'description'=>'Quiz',
+			'url'=>'question/delete',
+			'objecttype'=>true,
+			'inherit'=>false,
+			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
+		),
+
+		array(
+			'id'=>SSPACE_COMMAND_QUESTION_PREVIEW_QUESTION,
+			'name'=>'Preview Question',
+			'description'=>'Quiz',
+			'url'=>'question/preview',
+			'objecttype'=>true,
+			'inherit'=>false,
+			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
+		),
+
 		array(
 			'id'=>SSPACE_COMMAND_QUESTION_IMPORTMOODLE,
 			'name'=>'Import Moodle XML',
@@ -831,7 +864,7 @@ function RbacDefaultCommands()
 			'inherit'=>false,
 			'roles'=>array(SSPACE_ROLE_CONTENT, SSPACE_ROLE_TEACHER),
 		),
-			
+
 		array(
 			'id'=>SSPACE_COMMAND_OBJECT_CREATE_FLASHCARD,
 			'name'=>'New Flashcards',

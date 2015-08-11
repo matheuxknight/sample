@@ -25,6 +25,9 @@ while($parent && $parent->model)
 	$parent = $parent->parent;
 }
 
+$tmp = dbocolumn("select id from object where parentid=$object->id and recordings");
+$listparent = array_unique(array_merge($listparent, $tmp));
+
 $stringparent = '0';
 foreach($listparent as $id)
 	$stringparent .= " or vfile.parentlist like '%, $id, %'";

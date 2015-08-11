@@ -70,6 +70,7 @@ function showObjectMenu($object)
 	if($object->recordings) return;
 	$commands = null;
 
+	$showfilters = false;
 	switch($object->type)
 	{
 		case CMDB_OBJECTTYPE_LINK:
@@ -88,6 +89,7 @@ function showObjectMenu($object)
 			break;
 
 		case CMDB_OBJECTTYPE_COURSE:
+		//	$showfilters = true;
 			$shortcut = RbacCommandCourseShortcut();
 			$commands = RbacCommandCourseTable();
 			break;
@@ -103,13 +105,16 @@ function showObjectMenu($object)
 			break;
 			
 		case CMDB_OBJECTTYPE_TEXTBOOK:
+		//	$showfilters = true;
 			$shortcut = RbacCommandTextbookShortcut();
 			$commands = RbacCommandTextbookTable();
 			break;
 			
 		case CMDB_OBJECTTYPE_LESSON:
+		//	$showfilters = true;
 			$shortcut = RbacCommandLessonShortcut();
 			$commands = RbacCommandLessonTable();
+			debuglog($shortcut);
 			break;
 			
 		case CMDB_OBJECTTYPE_QUIZ:
@@ -118,6 +123,7 @@ function showObjectMenu($object)
 			break;
 			
 		default:
+		//	$showfilters = true;
 			if($object->post)
 			{
 				$shortcut = RbacCommandForumShortcut();
@@ -131,7 +137,7 @@ function showObjectMenu($object)
 				
 			break;
 	}
-
+	
 	$createmenu = null;
 	$count = 0;
 	
@@ -151,6 +157,7 @@ function showObjectMenu($object)
 		if(!$found) continue;
 		$command = getdbo('Command', $id);
 		
+ 	//	debuglog($id);
 		if(!controller()->rbac->objectAccess($object, $command))
 			continue;
 		
@@ -158,18 +165,17 @@ function showObjectMenu($object)
 			continue;
 		
 		$urlarray = array($command->url, 'id'=>$object->id);
-// 		debuglog($id);
 		
-		if($command->id == SSPACE_COMMAND_ENROLL_ENROLL || 
-			$command->id == SSPACE_COMMAND_ENROLL_UNENROLL)
+		if($command->id == SSPACE_COMMAND_ENROLL_ENROLL_SELF || 
+			$command->id == SSPACE_COMMAND_ENROLL_UNENROLL_SELF)
 		{
 			if(!$object->course) continue;
 			if($object->course->enrolltype != CMDB_OBJECTENROLLTYPE_SELF) continue;
 
 			$b = isCourseEnrolled(getUser()->id, $object->id);
 
-			if($b && $command->id == SSPACE_COMMAND_ENROLL_ENROLL) continue;
-			if(!$b && $command->id == SSPACE_COMMAND_ENROLL_UNENROLL) continue;
+			if($b && $command->id == SSPACE_COMMAND_ENROLL_ENROLL_SELF) continue;
+			if(!$b && $command->id == SSPACE_COMMAND_ENROLL_UNENROLL_SELF) continue;
 		}
 
 		if($command->id == SSPACE_COMMAND_COURSE_CONNECT)
@@ -187,14 +193,13 @@ function showObjectMenu($object)
 			{
 				$createmenu = true;
 
-				echo "<a href='' id='link_shortcut_add_content'>
-						<img src='/images/base/dot.png'>Add Content&nbsp;&nbsp;
+				echo "<a href='' id='link_shortcut_add_content'>Add Content&nbsp;&nbsp;
 						<img src='/images/ui/arrow-down.gif'></a>&nbsp;&nbsp;";
 				
 				if(param('shortcutbutton'))
 					JavascriptReady("$('#link_shortcut_add_content').button();");
 				
-				echo "<div id='objectmenu-container' class='objectmenu-box'><ul class='objectmenu'>";
+				echo "<div id='objectmenu-container' class='objectmenu-box''><ul class='objectmenu'>";
 				
 				JavascriptReady("
 				$('#link_shortcut_add_content').click(function(e)
@@ -207,7 +212,6 @@ function showObjectMenu($object)
 				{
 					$('#objectmenu-container').hide();
 				});");
-				
 			}
 			
 			showListCommand($command, "id=$object->id");
@@ -232,10 +236,27 @@ function showObjectMenu($object)
 
 	if($createmenu)
 	{
-		$createmenu = null;
+	//	$createmenu = null;
 		echo '</ul></div>';
 	}
 
+	if($showfilters)
+	{
+		echo "<a href='' id='showpanel'>Filters&nbsp;&nbsp;
+			<img src='/images/ui/arrow-down.gif'></a>&nbsp;&nbsp;";
+	
+		if(param('shortcutbutton'))
+			JavascriptReady("$('#showpanel').button();");
+	
+		JavascriptReady("
+			$('#showpanel').click(function(e)
+			{
+				$('#searchpanel').toggle();
+				return false;
+			});");
+	}
+	
+	
 // 	$user = getUser();
 // 	if($object->id == $user->folderid)
 // 	{

@@ -30,6 +30,18 @@ class ObjectController extends CommonController
 			$this->redirect(array('show', 'id'=>$object->id));
 		}
 
+		$user = getUser();
+
+		if(!controller()->rbac->globalAdmin())
+		{
+			$courseid = getContextCourseId();
+			if(!$courseid)
+			{
+				$course = getRelatedCourse($object, $user);
+				if($course) setContextCourse($course->id);
+			}
+		}
+		
 		$this->RedirectObject($object, '');
 
 		$objectext = getdbo('ObjectExt', $object->id);
@@ -39,7 +51,6 @@ class ObjectController extends CommonController
 			$objectext->save();
 		}
 		
-		$user = getUser();
 		switch($object->type)
 		{
 			case CMDB_OBJECTTYPE_LESSON:
@@ -138,7 +149,6 @@ class ObjectController extends CommonController
 		$object->type = CMDB_OBJECTTYPE_OBJECT;
 		$object->parentid = $_GET['id'];
 		$object->post = true;
-	//	$object->courseid = user()->getState('courseid');
 		
 		$parent = getdbo('Object', $object->parentid);
 		if(isset($_POST['Object']))
@@ -146,36 +156,13 @@ class ObjectController extends CommonController
 			$object2 = objectCreateData($object, $_GET['id'], $_POST['Object'], $_POST['ObjectExt']);
 			if(!$object2)
 			{
+				$object->ext->doctext = $_POST['ObjectExt']['doctext'];
 				$this->render('createforum', array('object'=>$object));
 				return;
 			}
 
 			$object2->post = true;
 			$object2->save();
-			
-			if(!$object2->parent->post)
-			{
-				$ce = new CommandEnrollment;
-				$ce->commandid = SSPACE_COMMAND_OBJECT_CREATE_POST;
-				$ce->roleid = SSPACE_ROLE_USER;
-				$ce->objectid = $object2->id;
-				$ce->has = true;
-				$ce->save();
-
-				$ce = new CommandEnrollment;
-				$ce->commandid = SSPACE_COMMAND_FILE_UPLOAD;
-				$ce->roleid = SSPACE_ROLE_USER;
-				$ce->objectid = $object2->id;
-				$ce->has = true;
-				$ce->save();
-
-				$ce = new CommandEnrollment;
-				$ce->commandid = SSPACE_COMMAND_FILE_RECORD;
-				$ce->roleid = SSPACE_ROLE_USER;
-				$ce->objectid = $object2->id;
-				$ce->has = true;
-				$ce->save();
-			}
 			
 			objectUpdateParent($object2, now());
 			$this->redirect(array('show', 'id'=>$object2->id));
@@ -322,7 +309,7 @@ class ObjectController extends CommonController
 
 		if(isset($_POST['Object']))
 		{
-			debuglog($_POST['ObjectExt']);
+		//	debuglog($_POST['ObjectExt']);
 			$oldtype = $object->type;
 
 			$object2 = objectUpdateData($object, $_POST['Object'], $_POST['ObjectExt']);
@@ -446,7 +433,7 @@ class ObjectController extends CommonController
 			//Object::model()->findByPk($id);
 
 			if($this->_object===null)
-				throw new CHttpException(500, 'The requested object does not exist.');
+				throw new CHttpException(500, "The requested object does not exist $id.");
 		}
 		return $this->_object;
 	}
@@ -865,6 +852,26 @@ class ObjectController extends CommonController
 	
 		$object->save();
 		$this->goback();
+	}
+	
+	public function actionGetCustom()
+	{
+		$user = getUser();
+		$object = $this->loadobject();
+	
+		$loginpostdata = $object->ext->custom;
+		$loginpostdata = preg_replace('/\$user.logon/', $user->logon, $loginpostdata);
+		$loginpostdata = preg_replace('/\$user.name/', $user->name, $loginpostdata);
+		$loginpostdata = preg_replace('/\$user.firstname/', $user->firstname, $loginpostdata);
+		$loginpostdata = preg_replace('/\$user.lastname/', $user->lastname, $loginpostdata);
+		
+		echo $loginpostdata;
+	}
+	
+	public function actionClearContextCourse()
+	{
+		setContextCourse(0);
+		controller()->goback();
 	}
 	
 }

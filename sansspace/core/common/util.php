@@ -98,6 +98,12 @@ function getPlayerConnect()
 	return 'rtmp://'.getServerName().':'.SANSSPACE_RTMPPORT.'/'.SANSSPACE_SITENAME;
 }
 
+function getPlayerConnectRtmpt()
+{
+	return 'rtmpt://'.getServerName().':'.SANSSPACE_RTMPPORT.'/'.SANSSPACE_SITENAME;
+//	return 'rtmpt://'.$_SERVER['HTTP_HOST'].'/'.SANSSPACE_SITENAME;
+}
+
 ///////////////////
 
 function getClientPlatform()
@@ -197,7 +203,7 @@ function IsMobileDevice()
 
 function IsMobileEmbeded()
 {
-	if(isset($_REQUEST['noheader']) || strstr($_SERVER['HTTP_REFERER'], 'noheader'))
+	if(user()->getState('noheader'))
 		return true;
 	
 	return false;

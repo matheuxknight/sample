@@ -36,6 +36,12 @@ while($parent && $parent->model)
 	$parent = $parent->parent;
 }
 
+$tmp = dbocolumn("select id from object where parentid=$object->id and recordings");
+$listparent = array_unique(array_merge($listparent, $tmp));
+
+$tmp = dbocolumn("select id from object where parentid=$object->id and recordings");
+$listparent = array_unique(array_merge($listparent, $tmp));
+
 $stringparent = '0';
 foreach($listparent as $id)
 	$stringparent .= " or vfile.parentlist like '%, $id, %'";
@@ -55,10 +61,11 @@ showTableSorter('maintable', '{headers: {0: {sorter: false}, 8: {sorter: false}}
 echo "<thead class='ui-widget-header'><tr>";
 echo "<th width=20></th>";
 echo "<th>User</th>";
+echo "<th>ID</th>";
 echo "<th>Views</th>";
 echo "<th>Time</th>";
 echo "<th>Record</th>";
-echo "<th>Status</th>";
+//echo "<th>Status</th>";
 echo "<th>Grade</th>";
 echo "<th>Role</th>";
 echo "<th></th>";
@@ -78,6 +85,8 @@ foreach($listuser as $model)
 		'userid'=>$model->userid, 'after'=>$after, 'before'=>$before));
 	echo "</td>";
 
+	echo "<td>$user->custom1</td>";
+	
 	$recordtime = getRecordTime($object, $model->user);
 
 	$params = "select count(*), sum(filesession.duration) from filesession, user, vfile where ".
@@ -97,11 +106,11 @@ foreach($listuser as $model)
 	echo "<td>$opencount</td>";
 	echo "<td>".sectoa($playtime)."</td>";
 
-	$courseid = user()->getState('courseid');
+	$courseid = getContextCourseId();
 	$folder = userRecordingFolder($object, $model->user, $courseid);
 	echo "<td>".sectoa($recordtime)."</td>";
 
-	echo "<td>{$model->statusText}</td>";
+//	echo "<td>{$model->statusText}</td>";
 	echo "<td>{$model->grade}</td>";
 
 	echo "<td>{$model->role->description}</td>";
@@ -125,6 +134,7 @@ echo "<tr class='ssrow'>";
 echo "<th></th>";
 echo "<th><b>Total: ".count($listuser)."</b></th>";
 
+echo "<th></th>";
 echo "<th>$totalopen</th>";
 echo "<th>".sectoa($totalplay)."</th>";
 echo "<th>".sectoa($totalrecord)."</th>";

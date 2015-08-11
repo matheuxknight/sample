@@ -3,11 +3,7 @@
 include '/sansspace/ui/lib/pageheader.php';
 
 echo "</head>";
-
-
 echo "<body style='overflow: hidden;'>";
-
-
 
 $file = getdbo('VFile', getparam('id'));
 
@@ -29,7 +25,18 @@ switch($file->filetype)
 		break;
 		
 	case CMDB_FILETYPE_URL:
-		$url = $file->pathname;
+		if($file->http_proxy)
+		{
+	 		if($_SERVER['HTTPS'] == 'on')
+	 			$localdomain = 'https://'.$_SERVER['HTTP_HOST'];
+	 		else
+				$localdomain = 'http://'.$_SERVER['HTTP_HOST'];
+ 		
+			$url = "$localdomain/proxy?url=$file->pathname";
+		}
+		
+		else
+			$url = $file->pathname;
 		break;
 }
 
@@ -57,27 +64,63 @@ foreach($user->courseenrollments as $e)
 	}
 }
 
+$dologin = '0';
+if(!empty($file->ext->custom)) $dologin = '1';
+
+JavascriptReady("window.onbeforeunload = function(){
+	$.ajax({url: '/object/leavepage?id=$file->id', async: false});}");
+
 echo <<<END
 
-<br><br>
+<br>
 
-
-<iframe id='linkframe' frameborder=0 src='{$url}' width='100%' height='10000'>
+<iframe id='linkframe' frameborder=0 width='100%' height='10000'>
 <p>Your browser does not support iframes.</p></iframe>
 
 </body></html>
 
 <script>
+var load_counter = 0;
+
 $(function()
 {
 	$('#linkframe').load(function()
 	{
+ 		if($dologin)
+ 		{
+ 			if(load_counter==1)
+ 			{
+				$('#loading_dialog_div').dialog(
+				{
+					title: 'Loading Site...',
+					autoOpen: true,
+					modal: true,
+					width: 360,
+					height: 240,
+				});
+			
+				$('#linkframe').attr('src', '$url');
+			}
+
+ 			else if(load_counter==2)
+ 			{
+ 				$('#loading_dialog_div').dialog("close");
+ 			}
+		}
+ 		
 		$('#content').css('padding', 0);
 		var t = $('#sansspace_toolbar').height();
 		
 		$('#linkframe').height(window.innerHeight-t);
+		load_counter++;
 	});
 
+	if($dologin)
+		$('#linkframe').attr('src', '/object/getcustom?id=$file->id');
+
+	else
+		$('#linkframe').attr('src', '$url');
+	
 	$('#button-comment').button().click(function()
 	{
 		$('#comment_dialog_div').dialog(
@@ -126,7 +169,7 @@ $(function()
 			autoOpen: true,
 			modal: false,
 			width: 260,
-			height: 150,
+			height: 170,
 			minWidth: 200,
 			minHeight: 140,
 
@@ -165,17 +208,18 @@ $(function()
 	});
 
 });
-
 </script>
 
 <div id="comment_dialog_div" style='display: none; overflow: hidden;'>
-
 <textarea id='comment_input' style='width: 99%; height: 99%; '>
 </textarea>
-		
 <br><br><br>
 </div>
-			
+
+<div id="loading_dialog_div" style='display: none; overflow: hidden;'>
+Please wait...
+<br><br><br>
+</div>
 
 END;
 

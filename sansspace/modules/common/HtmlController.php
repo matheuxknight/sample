@@ -17,6 +17,18 @@ class HtmlController extends CommonController
 		$user = getUser();
 		$id = $_GET['id'];
 		
+		if(isset($_GET['sort']) && !empty($_GET['sort']) && $_GET['sort'] != 'undefined')
+			user()->setState('listsort', $_GET['sort']);
+
+		else
+			user()->setState('listsort', 'displayorder, name');
+		
+		if(isset($_GET['layout']) && $_GET['layout'] != 'undefined')
+			user()->setState('layout', $_GET['layout']);
+		
+		else
+			user()->setState('layout', 'showsmall');
+		
 		if($id == 'adminsearch')
 		{
 			$criteria = new CDbCriteria;
@@ -40,7 +52,7 @@ class HtmlController extends CommonController
 		{
 			$criteria = buildObjectQuery($user, $id);
 			if(!$criteria) return;
-			
+
 			$criteria = filterObjectQuery($criteria);
 
 			$pages = new CPagination(getdbocount('Object', $criteria));
@@ -127,18 +139,19 @@ class HtmlController extends CommonController
 			}
 		}
 
-		if(!user()->isGuest && $object->id != CMDB_OBJECTROOT_ID)
-		{
-			if(hasFavorite($user->id, $object->id))
-				echo '<li>'.l(mainimg('menudot.png').
-					'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Remove from Favorites',
-					array('favorite/delete', 'id'=>$object->id));
-
-			else
-				echo '<li>'.l(mainimg('menudot.png').
-					'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Add to Favorites',
-					array('favorite/create', 'id'=>$object->id));
-		}
+		//if(param('theme') != 'wayside')
+		//	if(!user()->isGuest && $object->id != CMDB_OBJECTROOT_ID)
+		//	{
+		//		if(hasFavorite($user->id, $object->id))
+		//			echo '<li>'.l(mainimg('menudot.png').
+		//				'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Remove from Favorites',
+		//				array('favorite/delete', 'id'=>$object->id));
+	
+		//		else
+		//			echo '<li>'.l(mainimg('menudot.png').
+		//				'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Add to Favorites',
+		//				array('favorite/create', 'id'=>$object->id));
+		//	}
 
 		$commands = array();
 		switch($object->type)
@@ -206,16 +219,16 @@ class HtmlController extends CommonController
 				continue;
 			
 		//	debuglog("$command->name $command->image");
-			if(	$command->id == SSPACE_COMMAND_ENROLL_ENROLL || 
-				$command->id == SSPACE_COMMAND_ENROLL_UNENROLL)
+			if(	$command->id == SSPACE_COMMAND_ENROLL_ENROLL_SELF || 
+				$command->id == SSPACE_COMMAND_ENROLL_UNENROLL_SELF)
 			{
 				if(!$object->course) continue;
 				if($object->course->enrolltype != CMDB_OBJECTENROLLTYPE_SELF) continue;
 	
 				$b = isCourseEnrolled(getUser()->id, $object->id);
 				
-				if($b && $command->id == SSPACE_COMMAND_ENROLL_ENROLL) continue;
-				if(!$b && $command->id == SSPACE_COMMAND_ENROLL_UNENROLL) continue;
+				if($b && $command->id == SSPACE_COMMAND_ENROLL_ENROLL_SELF) continue;
+				if(!$b && $command->id == SSPACE_COMMAND_ENROLL_UNENROLL_SELF) continue;
 			}
 
 			if($object->folderimportid && (
@@ -240,7 +253,7 @@ class HtmlController extends CommonController
 					$object->name == CMDB_PERSONALFOLDERNAME) continue;
 				
 				if($object->parent->id == CMDB_OBJECTROOT_ID &&
-						$object->name == CMDB_LANGUAGECOURSESNAME) continue;
+					$object->name == CMDB_LANGUAGECOURSESNAME) continue;
 				
 				$icon = $command->image;
 				echo "<li>";
@@ -278,8 +291,9 @@ END;
 				if(!$createmenu)
 				{
 					$createmenu = true;
-					echo "<li id='object_submenu_$object->id'><a href='#'><img src='/images/base/dot.png'> 
-						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Add Content</a><ul class='objectmenu'>";
+                    if(controller()->rbac->globalAdmin()){
+					   echo "<li id='object_submenu_$object->id'><a href='#'><img src='/images/base/dot.png'> 
+						  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Add Content</a><ul class='objectmenu'>";}
 				}
 				
 				showListCommand($command, "id=$object->id");
@@ -321,7 +335,7 @@ END;
 			{
 				echo "<li>";
 				echo l(objectImage($object, 18).'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.
-					$object->name, objectUrl($object));
+					$object->name);
 			 	echo '</li>';
 			}
 		}

@@ -1,6 +1,7 @@
 <?php
 
 include '/sansspace/ui/lib/pageheader.php';
+$backcolor = param('appmainback');
 
 echo <<<END
 <style>
@@ -22,9 +23,9 @@ body
 	right: 0px;
 	padding: 10px;
 	display: block;
-	z-order: 100;
+	z-index: 100;
 	overflow-y: auto;
-/*	background-color: yellow;*/
+	background-color: $backcolor;
 }
 
 </style>

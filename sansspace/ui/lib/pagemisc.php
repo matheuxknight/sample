@@ -2,93 +2,108 @@
 
 function showObjectComments($object)
 {
+	if(!controller()->rbac->objectAccess2($object, SSPACE_COMMAND_COMMENT_VIEW)) return;
+	
 	echo "<br>";
-	echo "<div id='commentblock' style='display: none'>";
-	JavascriptReady("$('#commentblock').show();");
-	
-	$comments = getdbolist('Comment', "parentid=$object->id order by pinned desc, created");
-	echo "<p><b>User Comments: ".count($comments)."</b></p>";
-	
-	foreach($comments as $comment)
-		showComment($comment);
-	
-	if(	param('quickcomment') && 
-		controller()->rbac->objectAccess2($object, SSPACE_COMMAND_COMMENT_CREATE))
+    $comments = getdbolist('Comment', "parentid=$object->id order by pinned desc, created");
+    if(!$object->post){
+        JavascriptReady("$('#quickcomment').css({'left': '-9999px', 'height': '0px'});");
+        JavascriptReady("\$('#showcommentinput').click(function(){\$('#quickcomment').css({'left': '0px', 'height': '100%'});});");
+    }
+   
+   	echo "<div id='commentblock'>";   
+	if(	param('quickcomment') )
 	{
-		$comment = new Comment;
+        //echo CUFHtml::button('Add Comment', array('id'=>'showcommentinput','style'=>'margin-bottom:10px'));
+        //JavascriptReady("$('#showcommentinput').click(function(){\$('#quickcomment').show();});");
+        $comment = new Comment;
+        
 		echo CUFHtml::beginForm("/comment/create&id=$object->id");
-	
+        if(!$object->post){
+		echo "<div id='showcommentinput'><b>Add Comment</b>&nbsp;<img src='/images/ui/arrow-down.gif'></div>";}
+	    echo "<div id='quickcomment'>";
 		echo CUFHtml::activeTextArea($comment, 'doctext');
 		showAttributeEditor($comment, 'doctext', 120, 'custom1');
 		
 	 	echo "<br>";
 	 	
 		showButtonHeader();
-		echo CUFHtml::submitButton('Post Comment', array('id'=>'btnSubmit'));
-		echo "<input id='saveasbutton' value='Save As...' size='6'>";
-		
+		echo CUFHtml::submitButton('Add Comment', array('id'=>'btnSubmit'));
+		//echo "<input id='saveasbutton' value='Save As...' size='6'>";
+		echo "</div></div>";
+        
 		// TODO: if not mediafile
 // 		if(!$object->file || $object->file->filetype != CMDB_FILETYPE_MEDIA)
 // 			echo "<input id='recorderbutton' value='Recorder...' size='7'>";
 
-		echo "</div>";
-	 	echo <<<END
-<script>
-$(function()
-{
- 	$('#saveasbutton').click(function()
- 	{
-		onShowObjectBrowser('html', false, true, '', '', 'myfolders', 'My Saved Work', 
-			function(selectedid, selectedname) 
-			{
-				post_to_url('/file/createhtml?id='+selectedid, 
-				{
-					'VFile[name]': selectedname,
-					'VFile[originalid]': $object->id,
-					'htmlcontents': $('#Comment_doctext').elrte('val')
-				});
-			});
+//		echo "</div>";
+	 	//echo <<<END
+//<script>
+//$(function()
+//{
+//	$('#saveasbutton').click(function()
+// 	{
+//		onShowObjectBrowser('html', false, true, '', '', 'myfolders', 'My Saved Work', 
+//			function(selectedid, selectedname) 
+//			{
+//				post_to_url('/file/createhtml?id='+selectedid, 
+//				{
+//					'VFile[name]': selectedname,
+//					'VFile[originalid]': $object->id,
+//					'htmlcontents': $('#Comment_doctext').elrte('val')
+//				});
+//			});
 			
-		return false;
-	});
+//		return false;
+//	});
 	
-	$('#recorderbutton').click(function()
-	{
-		$('#recorder_dialog_div').remove();
-		$('body').append('<div id="recorder_dialog_div" style="padding: 0px;" />');
+//	$('#recorderbutton').click(function()
+//	{
+//		$('#recorder_dialog_div').remove();
+//		$('body').append('<div id="recorder_dialog_div" style="padding: 0px;" />');
 		
-		$('#recorder_dialog_div').dialog(
-		{
-			title: 'Quick Recorder',
-			autoOpen: true, 
-			width: 360, 
-			height: 354, 
-			minWidth: 300,
-			minHeight: 300,
-			modal: false,
+//		$('#recorder_dialog_div').dialog(
+//		{
+//			title: 'Quick Recorder',
+//			autoOpen: true, 
+//			width: 360, 
+//			height: 354, 
+//			minWidth: 300,
+//			minHeight: 300,
+//			modal: false,
 			
-			resize: function(event, ui)
-			{
-				var h = $('#recorder_dialog_div').height();
-				$('#sansmediad').css("height", h);
-			},
-			beforeClose: function(event, ui){},
-		})
+//			resize: function(event, ui)
+//			{
+//				var h = $('#recorder_dialog_div').height();
+//				$('#sansmediad').css("height", h);
+//			},
+//			beforeClose: function(event, ui){},
+//		})
 
-		$.get('/recorder/internalquickrecorder&id=', '', 
-			function(data)
-			{
-				$('#recorder_dialog_div').html(data);
-			});
-	});
+//		$.get('/recorder/internalquickrecorder&id=', '', 
+//			function(data)
+//			{
+//				$('#recorder_dialog_div').html(data);
+//			});
+//	});
 
-});
-</script>
-END;
-
+//});
+//</script>
+//END;
 		echo CUFHtml::endForm();
 	}
-	
+ 
+	if(count($comments))
+	{
+		$courseid = getContextCourseId();
+		//echo "<p><b>User Comments: ".count($comments)."</b></p>";
+
+		foreach($comments as $comment)
+		{
+			if(!$comment->courseid || $comment->courseid == $courseid)
+				showComment($comment);
+		}
+	}
 	echo "</div>";
 	echo "<br>";
 	echo "<br>";
@@ -96,31 +111,31 @@ END;
 
 function showComment($comment)
 {
-	echo "<div class=ssbox>";
+	echo "<div class='commentbox'>";
 
 	echo "<div class=header><table width='100%' border=0 cellspacing=0><tr><td width=28>";
 	echo userImage($comment->author, 32);
-	echo "</td><td>";
+	echo "</td><td class='commentinfo'>";
 
 	echo $comment->author->name;
-	echo "<p class=subheader>Sent ".datetoa($comment->created)."</p>";
+	echo "<p class=subheader>".datetoa($comment->created)."</p>";
 	echo "</td><td nowrap width=64>";
 
 	$b = controller()->rbac->objectUrl($comment->object, 'comment', 'update');
-	if($b)
+	if($b || controller()->rbac->globalTeacher() || controller()->rbac->globalAdmin())
 	{
 		$command = controller()->rbac->commandfromurl('comment', 'update');
 		echo l($command->image,
 			array($command->url, 'id'=>$comment->id),
-			array('title'=>$command->name)).'&nbsp;&nbsp;';
+			array('title'=>$command->name, 'width'=>24)).'&nbsp;&nbsp;';
 	}
 
 	$b = controller()->rbac->objectUrl($comment->object, 'comment', 'delete');
-	if($b)
+	if($b || controller()->rbac->globalTeacher() || controller()->rbac->globalAdmin())
 	{
 		$command = controller()->rbac->commandfromurl('comment', 'delete');
 		echo l($command->image, '#',
-			array('id'=>"delete_comment_$comment->id", 'title'=>$command->name)).'&nbsp;&nbsp;';
+			array('id'=>"delete_comment_$comment->id", 'title'=>$command->name,'width'=>'24')).'&nbsp;&nbsp;';
 
 		echo <<<END
 <script>$(function(){ $('#delete_comment_$comment->id').click(function(){

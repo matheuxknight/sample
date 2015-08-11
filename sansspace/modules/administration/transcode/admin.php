@@ -38,7 +38,7 @@ echo "<br>";
 //			{
 //				var id2 = $(this).attr('id').substr(9);
 //				if(id == id2)
-//					$.get("/index.php?r=transcode/setorder&id="+id+"&order="+i);
+//					$.get("/transcode/setorder&id="+id+"&order="+i);
 //			});
 //		}
 //	}).disableSelection();});

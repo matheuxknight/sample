@@ -34,7 +34,8 @@ echo "<thead class='ui-widget-header'><tr>";
 echo "<th width=20></th>";
 echo "<th>Course Name</th>";
 echo "<th>Folder</th>";
-echo "<th>Custom</th>";
+echo "<th>Exemption Status</th>";
+echo "<th>Creation Date</th>";
 echo "<th>Semester</th>";
 echo "<th>Teacher</th>";
 echo "<th>Enrolled</th>";
@@ -61,7 +62,8 @@ foreach($courses as $course)
 	showObjectMenuContext($course->parent);
 	echo "</td>";
 	
-	echo "<td>{$course->ext->custom}</td>";
+	echo "<td>{$course->exempt}</td>";
+	echo "<td style='width:200px'>{$course->createdint}</td>";
 	echo $course->semester? "<td>{$course->semester->name}</td>": "<td></td>";
 		
 	echo "<td>".$course->getTeacherName(true)."</td>";

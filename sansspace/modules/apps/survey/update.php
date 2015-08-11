@@ -13,7 +13,10 @@ $flashvars =
 	"&mainalpha=".preg_replace('/#/', '0x', param('appmainalpha')).
 	"&slidercolor=".preg_replace('/#/', '0x', param('appslidercolor')).
 	"&phpsessid=".session_id().
+	"&autosave=".param('appautosave').
+	"&servername=".$_SERVER['HTTP_HOST'].
 	"&connect=".getPlayerConnect().
+	"&connectrtmpt=".getPlayerConnectRtmpt().
 	"&connecthttp=".getFullServerName()."&id=";
 
 $this->widget('UniForm');

@@ -13,6 +13,7 @@ echo <<<END
 END;
 
 $theme = param('theme');
+$iconset = currentPageTheme();
 
 if(param('htmleditor') == 'elrte')
 	echo CHtml::cssFile('/extensions/elrte/css/elrte.full.css');
@@ -101,12 +102,12 @@ sendcssconfig('.ui-state-active, .ui-state-active a', 'color', 'activecolor', '!
 sendcssconfig('.ui-state-active', 'background', 'activeback', '!important');
 sendcssconfig('.ui-state-active', 'border', 'activeborder', '!important');
 
-$iconset = currentPageIconset();
 $filename = "/images/iconset/$iconset/default.css";
-
 if(file_exists(SANSSPACE_HTDOCS.$filename))
 	echo CHtml::cssFile($filename);
 
+if(param('theme') != 'wayside')
+	echo "<style>.page #headermenu { right: 80px;}</style>\n";
 
 
 

@@ -7,9 +7,9 @@ $list = getdbolist('VCourse', "parentid=$code->objectid");
 showTableSorter('maintable', '{headers: {0: {sorter: false}}}');
 echo "<thead class='ui-widget-header'><tr>";
 echo "<th width=20></th>";
-echo "<th>Course</th>";
+echo "<th style='min-width:300px;'>Course</th>";
 echo "<th>Teacher</th>";
-echo "<th style='min-width:200px;'>Details</th>";
+echo "<th style='min-width:400px;'>Details</th>";
 echo "</tr></thead><tbody>";
 
 $count = 0;
@@ -25,12 +25,15 @@ foreach($list as $course)
 			continue;
 	}
 
+	if(isCourseOutOfDate($course)) continue;
 
 	echo "<tr>";
 	echo "<td>".objectImage($course, 16)."</td>";
 	
+	$coursename = addslashes($course->name);
+	
 	echo <<<end
-<td><a href="javascript:doenrollment('$code->code', $course->id, '$course->name', '$teachers')">
+<td><a href="javascript:doenrollment('$code->code', $course->id)">
 <b>$course->name</b></a></td>
 end;
 	

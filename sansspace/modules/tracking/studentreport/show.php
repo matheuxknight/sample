@@ -25,6 +25,7 @@ JavascriptFile("/extensions/jqplot/plugins/jqplot.highlighter.js");
 JavascriptFile("/sansspace/modules/tracking/studentreport/toolbar.js");
 
 //////////////////////////////////////////////////
+
 echo "<h2>Grades</h2>";
 
 showButton($semester->name, '', array('id'=>'buttonsemester'));
@@ -114,7 +115,7 @@ if(controller()->rbac->objectUrl($object, 'teacherreport'))
 	echo CUFHtml::openActiveCtrlHolder($enrollment, 'roleid');
 	echo CUFHtml::activeLabelEx($enrollment, 'roleid');
 	echo CUFHtml::activeDropDownList($enrollment, 'roleid', Role::model()->courseData);
-	echo "<p class='formHint2'>Choose the role for this user in this group.</p>";
+	echo "<p class='formHint2'>Choose the role for this user in this course.</p>";
 	echo CUFHtml::closeCtrlHolder();
 }
 
@@ -238,35 +239,37 @@ echo "</tr></thead><tbody>";
 $totalduration = 0;
 $totalsize = 0;
 
-$folder = userRecordingFolder($object, $user);
-$folder_ids = array($folder->id);
-
-$fileList = getdbolist('VFile', "parentid in (".implode(',', $folder_ids).")");
-foreach($fileList as $file)
+$courseid = getContextCourseId();
+$folder = userRecordingFolder($object, $user, $courseid);
+if($folder)
 {
-	echo "<tr class='ssrow'>";
-
-	echo '<td width=24>'.objectImage($file, 18).'</td>';
-	echo '<td style="font-weight: bold;">';
-	showObjectMenuContext($file);
-	echo '</td>';
+	$fileList = getdbolist('VFile', "parentid=$folder->id");
+	foreach($fileList as $file)
+	{
+		echo "<tr class='ssrow'>";
 	
-	echo "<td nowrap>".sectoa($file->duration/1000)."</td>";
-//	echo '<td>'.Itoa($file->size).'</td>';
+		echo '<td width=24>'.objectImage($file, 18).'</td>';
+		echo '<td style="font-weight: bold;">';
+		showObjectMenuContext($file);
+		echo '</td>';
+		
+		echo "<td nowrap>".sectoa($file->duration/1000)."</td>";
+	//	echo '<td>'.Itoa($file->size).'</td>';
+		
+		echo '<td nowrap>'.datetoa($file->created).'</td>';
+		
+		echo '<td width=24>'.objectImage($file->original, 18).'</td>';
+		echo '<td style="font-weight: bold;">';
+		if($file->original) showObjectMenuContext($file->original);
+		echo '</td>';
+		
+		echo "<td nowrap>".sectoa($file->original->duration/1000)."</td>";
 	
-	echo '<td nowrap>'.datetoa($file->created).'</td>';
+		echo "</tr>";
 	
-	echo '<td width=24>'.objectImage($file->original, 18).'</td>';
-	echo '<td style="font-weight: bold;">';
-	if($file->original) showObjectMenuContext($file->original);
-	echo '</td>';
-	
-	echo "<td nowrap>".sectoa($file->original->duration/1000)."</td>";
-
-	echo "</tr>";
-
-	$totalduration += $file->duration/1000;
-	$totalsize += $file->size;
+		$totalduration += $file->duration/1000;
+		$totalsize += $file->size;
+	}
 }
 
 echo "</tbody><tr>";

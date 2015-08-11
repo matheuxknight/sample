@@ -7,6 +7,7 @@ $this->pageTitle = app()->name ." - ". $object->name;
 
 $attemptid = getparam('attemptid');
 $questionid = getparam('questionid');
+$number = getparam('number');
 
 if($attemptid)
 {
@@ -52,16 +53,18 @@ function showFile($file)
 	}
 }
 
-function saveAnswerFeedback($quiz, $question, $attempt, $answer)
+function saveAnswerFeedback($quiz, $question, $attempt, $answer, $number)
 {
+//	debuglog($_POST);
 	if(isset($_POST['QuizAttemptAnswer']))
 	{
 		$answer->result = $_POST['QuizAttemptAnswer']['result'] * $question->grade / 100;
 		$answer->comment = $_POST['QuizAttemptAnswer']['comment'];
+	//	debuglog("save $answer->id $answer->result $answer->comment");
 		$answer->save();
 			
 		QuizAutoCorrection($quiz, $attempt);
-		controller()->redirect(array('studentreport/', 'id'=>$quiz->quizid, 'attemptid'=>$attempt->id));
+		controller()->redirect(array('studentreport/', 'id'=>$quiz->quizid, 'attemptid'=>$attempt->id, 'number'=>$number));
 	}
 }
 
@@ -72,9 +75,9 @@ if($attemptid && $questionid)
 //	$duration = sectoa($attempt->duration);
 
 	$name = empty($question->name)? getTextTeaser($question->question, 512): $question->name;
-	$url = "/studentreport?id=$object->id&attemptid=$attempt->id";
+	$url = "/studentreport?id=$object->id&attemptid=$attempt->id&number=$number";
 
-	echo "<a href='$url'><b>Back to attemptid $attemptid</b></a>";
+	echo "<a href='$url'><b>Back to attempt</b></a>";
 	echo CUFHtml::beginForm();
 	
 	echo "<br><table class='dataGrid'>";
@@ -95,43 +98,62 @@ if($attemptid && $questionid)
 	{
 		case CMDB_QUIZQUESTION_SHORTTEXT:
 			$answer = getdbosql('QuizAttemptAnswer', "attemptid=$attemptid and questionid=$question->id");
-			saveAnswerFeedback($quiz, $question, $attempt, $answer);
-			
+			if(!$answer)
+			{
+				$answer = new QuizAttemptAnswer;
+				$answer->attemptid = $attempt->id;
+				$answer->questionid = $question->id;
+			}
+						
+			saveAnswerFeedback($quiz, $question, $attempt, $answer, $number);
 			$shorttexts = getdbolist('QuizQuestionShortText', "questionid=$question->id");
-
-			echo "<tr><td>Question:</td><td>$name</td></tr>";
-			echo "<tr><td>Type:</td><td>$question->answerTypeText</td></tr>";
-	
-			echo "<tr><td>Answer:</td><td>$answer->answershort</td></tr>";
+			if($name == null)
+				echo "<tr><td>Question:</td><td>#$question->id</td></tr>";
+			else
+				echo "<tr><td>Question:</td><td>$name</td></tr>";
+			echo "<tr><td>Question Type:</td><td>$question->answerTypeText</td></tr>";
+			
+			echo "<tr><td>Answer:</td><td><b>$answer->answershort</b></td></tr>";
 			
 			if($isteacher)
 				foreach($shorttexts as $n=>$st)
 				{
 					$i = $n+1;
-					echo "<tr><td>Option $i:</td><td>$st->value ($st->valid)</td></tr>";
+					echo "<tr><td>Possible Answer $i:</td><td>$st->value ($st->valid)</td></tr>";
 				}
 			
-			echo "<tr><td>Result:</td><td>$answer->result / $question->grade</td></tr>";
+			 
+			echo "<tr><td>Result:</td><td>";
+			
+			if(controller()->rbac->objectUrl($object, 'teacherreport'))
+			{
+				$answer->result /= $question->grade/100;
+				echo CUFHtml::activeTextField($answer, 'result');
+				echo " (0-100) ";
+			}
+			else
+				echo "$answer->result";
+				
+			echo "</td></tr>";
 			break;
 	
 		case CMDB_QUIZQUESTION_SELECT:
 			$answer = getdbosql('QuizAttemptAnswer', "attemptid=$attemptid and questionid=$question->id");
-			saveAnswerFeedback($quiz, $question, $attempt, $answer);
-			
+			if(!$answer)
+			{
+				$answer = new QuizAttemptAnswer;
+				$answer->attemptid = $attempt->id;
+				$answer->questionid = $question->id;
+			}
+						
+			saveAnswerFeedback($quiz, $question, $attempt, $answer, $number);
 			$selects = getdbolist('QuizQuestionSelect', "questionid=$question->id");
 			
 			$answerresult = $answer->result;
 			$select = $answer->answerselect;
 			
 			echo "<tr><td>Question:</td><td>$name</td></tr>";
-			echo "<tr><td>Type:</td><td>$question->answerTypeText</td></tr>";
-			
-			echo "<tr><td>Answer:</td><td>";
-			
-			echo $select->value;
-			if($select->file) showFile($select->file);
-	
-			echo "</td></tr>";
+			echo "<tr><td>Question Type:</td><td>$question->answerTypeText</td></tr>";
 
 			if($isteacher)
 				foreach($selects as $n=>$s)
@@ -140,21 +162,42 @@ if($attemptid && $questionid)
 					echo "<tr><td>Option $i:</td><td>";
 					
 					if($s->file) showFile($s->file);
-					echo " $s->value (valid $s->valid)";
+						if($s->valid > 0)
+							echo " $s->value (Correct - $s->valid points) ";	
+						else
+							echo " $s->value (Incorrect)";
 					
 					echo "</td></tr>";
 				}
+				
+			echo "<tr><td><b>Selected Answer:</b></td><td><b>";
 			
-			echo "<tr><td>Result:</td><td>$answer->result / $question->grade</td></tr>";
+			echo $select->value;
+			if($select->file) showFile($select->file);
+	
+			echo "</b></td></tr>";	
+				
+			echo "<tr><td>Result:</td><td>";
+			
+			if(controller()->rbac->objectUrl($object, 'teacherreport'))
+			{
+				$answer->result /= $question->grade/100;
+				echo CUFHtml::activeTextField($answer, 'result');
+				echo " (0-100) ";
+			}
+			else
+				echo "$answer->result / $question->grade";
+				
+			echo "</td></tr>";
 			break;
 	
 		case CMDB_QUIZQUESTION_MATCHING:
 			echo "<tr><td>Question:</td><td colspan=3>$name</td></tr>";
-			echo "<tr><td>Type:</td><td colspan=3>$question->answerTypeText</td></tr>";
+			echo "<tr><td>Question Type:</td><td colspan=3>$question->answerTypeText</td></tr><tr style='height:25px'></tr>";
 	
 			$count = getdbocount('QuizQuestionMatching', "questionid=$question->id");
 			$answers = getdbolist('QuizAttemptAnswer', "attemptid=$attemptid and questionid=$question->id");
-	
+			
 			$result = 0;
 			foreach($answers as $answer)
 			{
@@ -163,38 +206,54 @@ if($attemptid && $questionid)
 				$matching1 = getdbo('QuizQuestionMatching', $answer->answermatchingid1);
 				$matching2 = getdbo('QuizQuestionMatching', $answer->answermatchingid2);
 				
-				echo "<tr><td>Answer:</td>";
+				echo "<tr><td>Matched:</td>";
 				
 				echo "<td>";
-				echo $matching1->value1;
+				echo "$matching1->value1 - $matching2->value2";
 				if($matching1->file1) showFile($matching1->file1);
 				echo "</td>";
 				
-				if($isteacher)
-				{
-					echo "<td>";
-					echo $matching2->value2;
-					if($matching2->file2) showFile($matching2->file2);
-					echo "</td>";
-				}
-				else
-					echo "<td></td>";
+				//if($isteacher)
+				//{
+				//	echo "<td>";
+				//	echo $matching2->value2;
+				//	if($matching2->file2) showFile($matching2->file2);
+				//	echo "</td>";
+				//}
+				//else
+				//	echo "<td></td>";
 				
-				echo "<td>$answer->result</td>";
-				echo "</tr>";
+				echo "<tr><td>Result:</td><td>";
+			
+			if($answer->result > 0)
+				$answer->result = 'Correct';
+			else
+				$answer->result = 'Incorrect';
+		
+			echo "<b>$answer->result</b>";
+				
+			echo "</td></tr><tr style='height:25px'></tr>";
+			
 			}
 			
 			$answerresult = round($result / $count);
-			echo "<tr><td>Result:</td><td colspan=2></td><td><b>$answerresult / $question->grade</b></td></tr>";
-			
+			echo "<hr><tr><td><b>Final Result:</b></td><td><b>$answerresult %</b></td></tr>";
+			saveAnswerFeedback($quiz, $question, $attempt, $answer, $number);
 			break;
 
 		case CMDB_QUIZQUESTION_LONGTEXT:
 			$answer = getdbosql('QuizAttemptAnswer', "attemptid=$attemptid and questionid=$question->id");
-			saveAnswerFeedback($quiz, $question, $attempt, $answer);
+			if(!$answer)
+			{
+				$answer = new QuizAttemptAnswer;
+				$answer->attemptid = $attempt->id;
+				$answer->questionid = $question->id;
+			}
+						
+			saveAnswerFeedback($quiz, $question, $attempt, $answer, $number);
 			
 			echo "<tr><td>Question:</td><td>$name</td></tr>";
-			echo "<tr><td>Type:</td><td>$question->answerTypeText</td></tr>";
+			echo "<tr><td>Question Type:</td><td>$question->answerTypeText</td></tr>";
 	
 			echo "<tr><td>Result:</td><td>";
 				
@@ -217,11 +276,19 @@ if($attemptid && $questionid)
 			
 		case CMDB_QUIZQUESTION_COMPARATIVE:
 		case CMDB_QUIZQUESTION_RECORD:
+		//	debuglog("attemptid=$attempt->id and questionid=$question->id");
 			$answer = getdbosql('QuizAttemptAnswer', "attemptid=$attemptid and questionid=$question->id");
-			saveAnswerFeedback($quiz, $question, $attempt, $answer);
+			if(!$answer)
+			{
+				$answer = new QuizAttemptAnswer;
+				$answer->attemptid = $attempt->id;
+				$answer->questionid = $question->id;
+			}
+			
+			saveAnswerFeedback($quiz, $question, $attempt, $answer, $number);
 			
 			echo "<tr><td>Question:</td><td>$name</td></tr>";
-			echo "<tr><td>Type:</td><td>$question->answerTypeText</td></tr>";
+			echo "<tr><td>Question Type:</td><td>$question->answerTypeText</td></tr>";
 		
 			echo "<tr><td>Result:</td><td>";
 			
@@ -266,11 +333,11 @@ if($attemptid && $questionid)
 	
 	if($file)
 	{
-		echo "<br>Attached File: ";
+		//echo "<br>Attached File: ";
 		
-		echo objectImage($file, 22) . ' ' . l($file->name, array('file/', 'id'=>$file->id));
+		//echo objectImage($file, 22) . ' ' . l($file->name, array('file/', 'id'=>$file->id));
 		$duration = sectoa($file->duration/1000);
-		if($file->duration) echo " ($duration)";
+		//if($file->duration) echo " ($duration)";
 
 		switch($file->filetype)
 		{
@@ -280,7 +347,18 @@ if($attemptid && $questionid)
 		
 			case CMDB_FILETYPE_MEDIA:
 				echo "<br><br><div style='width:66%'>";
-				showMediaContent($file);
+//				showMediaContent($file);
+                ?>
+                <div id="AudioReview"></div>
+                <link href="/sansspace/ui/css/audio-review.css" type="text/css" rel="stylesheet" />
+                <script src="/bower_components/underscore/underscore-min.js"></script>
+                <script src="/sansspace/ui/js/audio-review.js"></script>
+                <script>
+                    $(document).ready(function(){
+                        AudioReview.init('#AudioReview', <?= $file->id ?>, 'teacher');
+                    });
+                </script>
+                <?php
 				echo "</div>";
 				break;
 					
@@ -293,29 +371,29 @@ else if($attemptid)
 {
 	$duration = sectoa($attempt->duration);
 	$result = $attempt->status==CMDB_QUIZATTEMPT_PASSED||$attempt->status==CMDB_QUIZATTEMPT_FAILED?
-		round($attempt->result, 2): '';
+		round($attempt->result, 2).' %': '';
 	
 	echo "<br><table class='dataGrid'>";
 	echo "<thead><tr>";
-	echo "<th width=100>AttemptID</th>";
-	echo "<th>$attemptid</th>";
+	echo "<th width=200>Quiz Results</th>";
+	echo "<th></th>";
 	echo "</tr></thead><tbody>";
 	
 	echo "<tr><td>Started:</td><td><b>$attempt->started</b></td></tr>";
 	echo "<tr><td>Duration:</td><td><b>$duration</b></td></tr>";
-	echo "<tr><td>Status:</td><td><b>$attempt->statusText</b></td></tr>";
+	echo "<tr><td>Quiz Status:</td><td><b>$attempt->statusText</b></td></tr>";
 	echo "<tr><td>Result:</td><td><b>$result</b></td></tr>";
 	echo "</table>";
 	
 	echo "<br><table class='dataGrid'>";
 	echo "<thead><tr>";
-	echo "<th>Question</th>";
-	echo "<th>Type</th>";
+	echo "<th>Question #</th>";
+	echo "<th>Question Type</th>";
 	echo "<th>Evaluation</th>";
 	echo "<th>Answer</th>";
 	echo "<th>Comment</th>";
-	echo "<th align=right>Result</th>";
-	echo "<th align=right>Grade</th>";
+	echo "<th align=left>Grade</th>";
+	echo "<th align=left>Total Possible Points</th>";
 	echo "</tr></thead><tbody>";
 	
 	$total_result = 0;
@@ -328,7 +406,7 @@ else if($attemptid)
 		if($question->answertype == CMDB_QUIZQUESTION_CLOZE) continue;
 		
 		$name = empty($question->name)? getTextTeaser($question->question, 60): $question->name;
-		$url = "/studentreport?id=$object->id&attemptid=$attemptid&questionid=$question->id";
+		$url = "/studentreport?id=$object->id&attemptid=$attemptid&questionid=$question->id&number=$number";
 		
 		$hasanswer = false;
 		$answerresult = '';
@@ -340,6 +418,7 @@ else if($attemptid)
 				$answer = getdbosql('QuizAttemptAnswer', "attemptid=$attemptid and questionid=$question->id");
 				$hasanswer = $answer? !empty($answer->answershort): false;
 				$answerresult = $answer->result;
+				//if($answerresult == null){$answerresult = 0;}
 				$correction = 'Auto';
 				break;
 				
@@ -369,7 +448,7 @@ else if($attemptid)
 			case CMDB_QUIZQUESTION_LONGTEXT:
 				$answer = getdbosql('QuizAttemptAnswer', "attemptid=$attemptid and questionid=$question->id");
 				$hasanswer = $answer? !empty($answer->answerlong) || $answer->answerfileid: false;
-				$answerresult = $answer->result? $answer->result: 'pending';
+				$answerresult = $answer->result!=null? $answer->result: 'pending';
 				break;
 				
 			case CMDB_QUIZQUESTION_NONE:
@@ -386,8 +465,8 @@ else if($attemptid)
 		echo "<td>$correction</td>";
 		echo "<td>".Booltoa($hasanswer)."</td>";
 		echo "<td>".Booltoa($hascomment)."</td>";
-		echo "<td align=right>$answerresult</td>";
-		echo "<td align=right>$question->grade</td>";
+		echo "<td align=left>$answerresult</td>";
+		echo "<td align=left>$question->grade</td>";
 		echo "</tr>";
 		
 		if(isset($answer) && $answer->answerfileid)
@@ -413,8 +492,8 @@ else if($attemptid)
 	echo "<td></td>";
 	echo "<td></td>";
 	echo "<td></td>";
-	echo "<td align=right><b>$total_result</b></td>";
-	echo "<td align=right><b>$total_grade</b></td>";
+	echo "<td align=left><b>$total_result</b></td>";
+	echo "<td align=left><b>$total_grade</b></td>";
 	echo "</tr>";
 	
 	echo "</tbody></table>";
@@ -442,17 +521,19 @@ else
 		$extracourse = "";
 		
 	$list = getdbolist('QuizAttempt', "quizid=$object->id and userid=$user->id $extracourse order by id");
-	foreach($list as $attempt)
+	foreach($list as $i=>$attempt)
 	{
+		$number = $i+1;
+		
 		$duration = sectoa($attempt->duration);
-		$result = $attempt->result===null? '': round($attempt->result, 2);
-		$url = "/studentreport?id=$object->id&attemptid=$attempt->id";
+		$result = $attempt->result===null? '': round($attempt->result, 2).' %';
+		$url = "/studentreport?id=$object->id&attemptid=$attempt->id&number=$number";
 		
 		// TODO:
 		$filecount = getdbocount('QuizAttemptAnswer', "attemptid=$attempt->id and answerfileid");
 		
 		echo "<tr class='ssrow'>";
-		echo "<td><a href='$url'><b>#$attempt->id - $attempt->started</b></a></td>";
+		echo "<td><a href='$url'><b>#$number - $attempt->started</b></a></td>";
 		echo "<td>$duration</td>";
 		echo "<td>$attempt->statusText</td>";
 		echo "<td>$result</td>";
@@ -474,7 +555,7 @@ else
 	echo "<td><b>Average:</b></td>";
 	echo "<td>$avgtime</td>";
 	echo "<td></td>";
-	echo "<td>$avgresult</td>";
+	echo "<td>$avgresult %</td>";
 	
 	echo "<td></td>";
 	echo "</tr>";

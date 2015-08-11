@@ -1,7 +1,8 @@
 <?php
 
 $this->pageTitle = app()->name ." - ". $course->name;
-user()->setState('courseid', $course->id);
+
+setContextCourse($course->id);
 
 showRoleBar($course);
 showNavigationBar($course->parent);
@@ -11,10 +12,23 @@ showObjectMenu($course->object);
 $teachername = $course->getTeacherName();
 $teacherrole = getdbosql('Role', "name='teacher'");
 
-echo "<table>";
+echo "<br><table>";
 
 if(!empty($teachername))
-	echo "<br><tr><td style='font-size:18px; line-height:1em;'>$teacherrole->description:</td><td style='font-size:18px; line-height:1em;'>&nbsp;<b> $teachername</b></td></tr>";
+{
+	if(param('theme') == 'wayside')
+		echo <<<end
+<tr>
+<td width=120 style='font-size:18px; line-height:1em;'>$teacherrole->description:</td>
+<td style='font-size:18px; line-height:1em;'><b>$teachername</b></td></tr>
+end;
+	else
+		echo <<<end
+<tr>
+<td>$teacherrole->description:</td>
+<td><b>$teachername</b></td></tr>
+end;
+}
 
 if($course->semester)
 {
@@ -23,17 +37,37 @@ if($course->semester)
 	echo "<tr><td>Ends:</td><td><b>{$course->semester->endtime}</b></td></tr>";
 }
 
-// else if($course->usedate)
-// {
-// 	echo "<tr><td>Starts:</td><td><b>$course->startdate</b></td></tr>";
-// 	echo "<tr><td>Ends:</td><td><b>$course->enddate</b></td></tr>";
-// }
+else if($course->usedate)
+{
+	$startArr = explode("-", $course->startdate);
+	$endArr = explode("-", $course->enddate);
+	
+	$startInt = mktime(0, 0, 0, $startArr[1], $startArr[2], $startArr[0]);
+	$endInt = mktime(23, 59, 59, $endArr[1], $endArr[2], $endArr[0]);
+	
+	if(time() < $startInt)
+	 	echo "<tr><td>Starting:</td><td>$course->startdate</td></tr>";
+	
+	if(time() > $endInt)
+		echo "<tr><td>Expired since: </td><td><b>$course->enddate</b></td></tr>";
+	else if(($endInt - time()) < 2500000){
+		echo "<tr><td><b>Expiring on: </b></td><td><b>$course->enddate</b></td></tr>";
+	}
+}
 
 echo "</table>";
 
-echo processDoctext($course, $course->ext->doctext);
-showFolderContents($course->id);
-
+if($course->usedate){
+	if(time() < $endInt){
+		echo processDoctext($course, $course->ext->doctext);
+		showFolderContents($course->id);}
+	else{
+		echo "<h3 align='center'>Uh oh! It looks like your course has expired.</h3>";}
+}
+else{
+	echo processDoctext($course, $course->ext->doctext);
+	showFolderContents($course->id);
+}
 // if($course->usedate)
 // {
 // 	echo "<div id='toto'></div>";
@@ -60,6 +94,11 @@ user()->setState('currentversion', $course->version);
 
 JavascriptReady("window.onbeforeunload = function(){
 	$.ajax({url: '/object/leavepage?id=$course->id', async: false});}");
+
+if(IsMobileEmbeded())
+	SetAppHeaderColors();
+
+
 
 
 

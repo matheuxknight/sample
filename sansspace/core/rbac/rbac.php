@@ -1,9 +1,13 @@
 <?php
 
 include 'defaultroles.php';
-include 'defaultcommands.php';
 include 'tablecommands.php';
 include 'exceptionFilter.php';
+
+if(param('theme') == 'wayside')
+	include 'defaultcommands-wayside.php';
+else
+	include 'defaultcommands.php';
 
 /////////////////////////////////////////////////////
 

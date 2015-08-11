@@ -1,6 +1,6 @@
 <?php
 
-function getRelatedCourse($object, $user)
+function getRelatedCourse($object, $user, $semester=null)
 {
 	foreach($user->courseenrollments as $e)
 	{
@@ -8,39 +8,48 @@ function getRelatedCourse($object, $user)
 		$course = $e->object->course;
 	
 		if(isCourseHasObject($course, $object))
-			return $course;
+		{
+			if($semester == null) return $course;
+		//	if(!$course->semester) return $course;
+			if($course->semester && $semester->id == $course->semester->id) return $course;
+		}
 	}
 	
 //	debuglog("getRelatedCourse($object->name, $user->name) -> null");
 	return null;
 }
 
-function getContextCourse()
+function getContextCourseId()
 {
 	$courseid = user()->getState('courseid');
+	if($courseid) return $courseid;
+		
+	$phpsessid = session_id();
+	$session = getdbosql('Session', "phpsessid='$phpsessid'");
+	
+	return $session->contextcourseid;
+}
+
+function getContextCourse()
+{
+	$courseid = getContextCourseId();
 	if(!$courseid) return null;
 	
 	$course = getdbo('VCourse', $courseid);
 	return $course;
-		
-// 	foreach($user->courseenrollments as $e)
-// 	{
-// 	//	debuglog("e {$e->object->name}");
-// 		if($e->object->type != CMDB_OBJECTTYPE_COURSE) continue;
-// 		if($courseid && $e->object->id != $courseid) continue;
-		
-// 		$course = $e->object->course;
-// 	//	debuglog("looking for $course->name");
+}
+
+function setContextCourse($courseid)
+{
+//	debuglog("setContextCourse($courseid)");
+	user()->setState('courseid', $courseid);
+	$phpsessid = session_id();
 	
-// 		if(isCourseHasObject($course, $object))
-// 		{
-// 			debuglog("getContextCourse($object->name) -> $course->name");
-// 			return $course;
-// 		}
-// 	}
-	
-// 	debuglog("getRelatedCourse($object->name, $user->name) -> null");
-// 	return null;
+	$session = getdbosql('Session', "phpsessid='$phpsessid'");
+	if(!$session) return;
+
+	$session->contextcourseid = $courseid;
+	$session->save();
 }
 
 function userRecordingFolder($object, $user=null, $courseid=0)
@@ -93,7 +102,8 @@ function userRecordingFolder($object, $user=null, $courseid=0)
 	
 	if($object->type != CMDB_OBJECTTYPE_COURSE)
 	{
-		$folder2 = getdbosql('Object', "parentid=$folder->id and name='$object->name'");
+		$name = str_replace("'", "\'", $object->name);
+		$folder2 = getdbosql('Object', "parentid=$folder->id and name='$name'");
 		if(!$folder2)
 		{
 			$folder2 = objectCreate($object->name, $folder->id);
@@ -151,23 +161,20 @@ function createPersonalFolder($user)
 
 function isCourseOutOfDate($object)
 {
-	$outofdate = false;
-	if($object->type == CMDB_OBJECTTYPE_COURSE)
-	{
-		if($object->course->usedate)
-		{
-			$startArr = explode("-", $object->course->startdate);
-			$endArr = explode("-", $object->course->enddate);
+	if($object->type != CMDB_OBJECTTYPE_COURSE) return false;
+	if(!$object->course->usedate) return false;
+	if(controller()->rbac->objectUrl($object, 'teacherreport')) return false;
+	
+	$startArr = explode("-", $object->course->startdate);
+	$endArr = explode("-", $object->course->enddate);
 
-			$startInt = mktime(0, 0, 0, $startArr[1], $startArr[2], $startArr[0]);
-			$endInt = mktime(23, 59, 59, $endArr[1], $endArr[2], $endArr[0]);
+	$startInt = mktime(0, 0, 0, $startArr[1], $startArr[2], $startArr[0]);
+	$endInt = mktime(23, 59, 59, $endArr[1], $endArr[2], $endArr[0]);
 
-			if(time() < $startInt || time() > $endInt)
-				$outofdate = true;
-		}
-	}
+	if(time() < $startInt || time() > $endInt)
+		return true;
 
-	return $outofdate;
+	return false;
 }
 
 function courseLinks($course)
@@ -188,21 +195,28 @@ function courseLinks($course)
 
 function isCourseHasObject($course, $object)
 {
-//	debuglog("isCourseHasObject($course->name, $object->name)");
+	if($object->courseid == $course->id) return true;
+	if($object->parentid == $course->id) return true;
+	if(strstr($object->parentlist, ", $course->id, ")) return true;
 	
-	if(strstr($object->parentlist, ", $course->id, "))
-		return true;
-	
-	$parent = $course->parent;
-	if($parent && $parent->type == CMDB_OBJECTTYPE_TEXTBOOK && strstr($object->parentlist, ", $parent->id, "))
-		return true;
-	
+ 	$parent = $course->parent;
+ 	while($parent && $parent->model)
+ 	{
+	//	if($course->parent->type == CMDB_OBJECTTYPE_TEXTBOOK && strstr($object->parentlist, ", $parent->id, "))
+	//	debuglog("$parent->courseid == $course->id");
+		if($parent->courseid == $course->id) return true;
+ 		if(strstr($object->parentlist, ", $parent->id, "))
+			return true;
+		
+		$parent = $parent->parent;
+ 	}
+ 	
 	$links = courseLinks($course);
 	while($object)
 	{
 		if(in_array($object->id, $links))
 			return true;
-		
+
 		$object = $object->parent;
 	}
 	

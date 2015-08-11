@@ -30,7 +30,7 @@ function objectShowPropertiesAdvanced($object, $update)
 	echo CUFHtml::openActiveCtrlHolder($object->ext, 'customcolor2');
 	echo CUFHtml::activeLabelEx($object->ext, 'customcolor2');
 	echo CUFHtml::activeTextField($object->ext, 'customcolor2', array('class'=>'miscInput'));
-	echo "<p class='formHint2'>The custom color 2 of this object (darker).</p>";
+	echo "<p class='formHint2'>The Color theme of certain UI and Quiz Modules</p>";
 	echo CUFHtml::closeCtrlHolder();
 	
 	$options = array('default'=>'default');

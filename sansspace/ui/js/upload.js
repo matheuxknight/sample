@@ -1,7 +1,9 @@
 
-$(function() {
-	$("#upload_field").html5_upload({
+var upload_complete = false;
 
+$(function() {
+	$("#upload_field").html5_upload(
+	{
 		method: 'post',
 		sendBoundary: window.FormData || $.browser.mozilla,
 		
@@ -22,7 +24,11 @@ $(function() {
 			$("#progress_report_bar").css('width', Math.ceil(val*100)+"%");
 		},
 		
-		onFinish: function(event, total) {
+		onFinish: function(event, total)
+		{
+			if(upload_complete) return;
+			upload_complete = true;
+			
 			window.location = window.location+'&complete';
 		},
 		

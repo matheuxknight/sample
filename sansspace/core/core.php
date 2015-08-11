@@ -6,5 +6,6 @@ require_once('functions/functions.php');
 require_once('properties/properties.php');
 require_once('rbac/rbac.php');
 require_once('email/email.php');
+require_once('cronjob/cronjob.php');
 
 

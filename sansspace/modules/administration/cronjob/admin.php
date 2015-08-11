@@ -5,6 +5,11 @@ echo "<h2>Manage Cron Jobs</h2>";
 
 showButtonHeader();
 showButton('New Job', array('create'));
+showButton('Deleted User List', array('../cronjobs/DeletedUsers/DeletedUsers.csv'));
+showButton('Deleted Course List', array('../cronjobs/DeletedCourses/DeletedCourses.csv')); 
+showButton('Full User Information', array('fulluserinfocsv'));
+showButton('Full Course Information', array('fullcourseinfocsv'));
+showButton('Teacher Email List', array('teacheremailcsv'));
 echo "</div>";
 echo "<br>";
 

@@ -91,7 +91,7 @@ class CCompareValidator extends CValidator
 			case '==':
 				if(($this->strict && $value!==$compareValue) || (!$this->strict && $value!=$compareValue))
 				{
-					$message=$this->message!==null?$this->message:Yii::t('yii','{attribute} must be repeated exactly.');
+					$message=$this->message!==null?$this->message:Yii::t('yii','{attribute} does not match.');
 					$this->addError($object,$attribute,$message,array('{compareAttribute}'=>$compareTo));
 				}
 				break;

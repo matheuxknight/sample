@@ -4,9 +4,9 @@ function showitem($item, $bold=false)
 {
 	$item = round($item, 2);
 	if($bold)
-		echo "<td><b>$item</b></td>";
+		echo "<td><b>$item %</b></td>";
 	else
-		echo "<td>$item</td>";
+		echo "<td>$item %</td>";
 }
 
 $this->pageTitle = app()->name ." - ". $object->name;
@@ -46,8 +46,9 @@ echo "<th>Highest</th>";
 echo "<th>Result</th>";
 echo "</tr></thead><tbody>";
 
-$totalattempt = 0;
+$totalquiz = 0;
 $totalstarted = 0;
+$totalevaluation = 0;
 $totalcompleted = 0;
 
 $totalfirst = 0;
@@ -60,12 +61,12 @@ foreach($list as $quiz)
 {
  	$quizobject = $quiz->object;
 	
-	$attempts = getdbocount('QuizAttempt', "quizid=$quiz->quizid and userid=$user->id and status!=".CMDB_QUIZATTEMPT_STARTED." and status!=".CMDB_QUIZATTEMPT_COMPLETED);
 	$started = getdbocount('QuizAttempt', "quizid=$quiz->quizid and userid=$user->id and status=".CMDB_QUIZATTEMPT_STARTED);
-	$completed = getdbocount('QuizAttempt', "quizid=$quiz->quizid and userid=$user->id and status=".CMDB_QUIZATTEMPT_COMPLETED);
+	$evaluation = getdbocount('QuizAttempt', "quizid=$quiz->quizid and userid=$user->id and status=".CMDB_QUIZATTEMPT_COMPLETED);
+	$completed = getdbocount('QuizAttempt', "quizid=$quiz->quizid and userid=$user->id and status!=".CMDB_QUIZATTEMPT_STARTED." and status!=".CMDB_QUIZATTEMPT_COMPLETED);
 	
-	$totalattempt += $attempts;
 	$totalstarted += $started;
+	$totalevaluation += $evaluation;
 	$totalcompleted += $completed;
 	
 	$first = getdbosql('QuizAttempt', "quizid=$quiz->quizid and userid=$user->id and result is not null order by started");
@@ -73,70 +74,93 @@ foreach($list as $quiz)
 	$highest = getdbosql('QuizAttempt', "quizid=$quiz->quizid and userid=$user->id and result is not null order by result desc");
 	$avg = dboscalar("select avg(result) from QuizAttempt where quizid=$quiz->quizid and userid=$user->id and result is not null");
 	
-	if($first)
-	{
-		$totalfirst += $first->result;
-		$totallast += $last->result;
-		$totalavg += $avg;
-		$totalhighest += $highest->result;
-	}
-	else
-		$avg = '';
-	
  	echo "<tr class='ssrow'>";
  	echo "<td>".objectImage($quizobject, 18)."</td>";
 	
  	echo "<td style='font-weight: bold;'>";
- 	echo l($quizobject->name, array('studentreport/', 'id'=>$quizobject->id, 'userid'=>$user->id, 'courseid'=>$courseid));
+ 	echo l($quizobject->name, array('studentreport/', 'id'=>$quizobject->id, 'userid'=>$user->id, 'courseid'=>$object->id));
  	echo "</td>";
 	
 	echo "<td>$started</td>";
+	echo "<td>$evaluation</td>";
 	echo "<td>$completed</td>";
-	echo "<td>$attempts</td>";
 	
-	$result = -1;
-	switch($quiz->gradingmethod)
+	if($first)
 	{
-		case CMDB_QUIZGRADING_AVG:
-			$result = $avg;
-			showitem($first->result);
-			showitem($last->result);
-			showitem($avg, true);
-			showitem($highest->result);
-			break;
-		case CMDB_QUIZGRADING_FIRST:
-			$result = $first->result;
-			showitem($first->result, true);
-			showitem($last->result);
-			showitem($avg, true);
-			showitem($highest->result);
-			break;
-		case CMDB_QUIZGRADING_LAST:
-			$result = $last->result;
-			showitem($first->result);
-			showitem($last->result, true);
-			showitem($avg);
-			showitem($highest->result);
-			break;
-		case CMDB_QUIZGRADING_HIGH:
-		default:
-			$result = $highest->result;
-			showitem($first->result);
-			showitem($last->result);
-			showitem($avg);
-			showitem($highest->result, true);
-			break;
+		$totalquiz++;
+		
+		$totalfirst += $first->result;
+		$totallast += $last->result;
+		$totalavg += $avg;
+		$totalhighest += $highest->result;
+		
+		$result = -1;
+		switch($quiz->gradingmethod)
+		{
+			case CMDB_QUIZGRADING_AVG:
+				$result = $avg;
+				showitem($first->result);
+				showitem($last->result);
+				showitem($avg, true);
+				showitem($highest->result);
+				break;
+			case CMDB_QUIZGRADING_FIRST:
+				$result = $first->result;
+				showitem($first->result, true);
+				showitem($last->result);
+				showitem($avg, true);
+				showitem($highest->result);
+				break;
+			case CMDB_QUIZGRADING_LAST:
+				$result = $last->result;
+				showitem($first->result);
+				showitem($last->result, true);
+				showitem($avg);
+				showitem($highest->result);
+				break;
+			case CMDB_QUIZGRADING_HIGH:
+			default:
+				$result = $highest->result;
+				showitem($first->result);
+				showitem($last->result);
+				showitem($avg);
+				showitem($highest->result, true);
+				break;
+		}
+
+		if($result >= $quiz->passthreshold)
+			echo "<td>Pass</td>";
+		else
+			echo "<td>Fail</td>";
 	}
-	
-	if(!$first)
-		echo "<td></td>";
-	else if($result >= $quiz->passthreshold)
-		echo "<td>Pass</td>";
 	else
-		echo "<td>Fail</td>";
+		echo "<td colspan=5></td>";
 	
  	echo "</tr>";
 }
+
+$count = count($list);
+$avgfirst = $totalquiz? round($totalfirst / $totalquiz, 2): 0;
+$avglast = $totalquiz? round($totallast / $totalquiz, 2): 0;
+$avgavg = $totalquiz? round($totalavg / $totalquiz, 2): 0;
+$avghighest = $totalquiz? round($totalhighest / $totalquiz, 2): 0;
+
+echo "</tbody>";
+echo "<tr class='ssrow'>";
+echo "<td></td>";
+echo "<td>$count Quizzes</td>";
+
+echo "<td>$totalstarted</td>";
+echo "<td>$totalevaluation</td>";
+echo "<td>$totalcompleted</td>";
+
+echo "<td>$avgfirst %</td>";
+echo "<td>$avglast %</td>";
+echo "<td>$avgavg %</td>";
+echo "<td>$avghighest %</td>";
+echo "<td></td>";
+
+echo "</tr>";
 
 echo "</table>";
 echo "</div>";
@@ -153,10 +177,10 @@ echo "<th>Survey</th>";
 echo "<th>Questions</th>";
 echo "</tr></thead><tbody>";
 
-$list = getdbolist('Object', "id in (select objectid from Survey where id in (select surveyid from SurveyAnswer where userid=$user->id))");
+$list = getdbolist('Object', "id in (select objectid from Survey where id in (select surveyid from SurveyAnswer where userid=$user->id and courseid=$object->id))");
 foreach($list as $folder)
 {
-	$answerred = getdbocount('SurveyAnswer', "userid=$user->id and courseid=$object->id");
+	$answerred = getdbocount('SurveyAnswer', "userid=$user->id and courseid=$object->id and surveyid in (select id from Survey where objectid=$folder->id)");
 	
 	echo "<tr class='ssrow'>";
  	echo "<td>".objectImage($folder, 18)."</td>";
@@ -165,7 +189,6 @@ foreach($list as $folder)
  	echo "</td>";
  		
 	echo "<td>$answerred</td>";
-	
  	echo "</tr>";
 }
 

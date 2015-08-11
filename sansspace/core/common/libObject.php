@@ -36,6 +36,17 @@ function copyFile2Temp($file)
 	
 	debuglog("copyfile $filename, $tempname");
 	@copy($filename, $tempname);
+	
+	// copy the samples file too
+	
+	$filename = objectPathnameSoundSamples($file);
+	$tempname = SANSSPACE_TEMP.'/phpsessid='.session_id().'.samples';
+	
+	@unlink($tempname);
+	
+	debuglog("copyfile $filename, $tempname");
+	@copy($filename, $tempname);
+	
 }
 
 function isMediaFormatSupported($file)

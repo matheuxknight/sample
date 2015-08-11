@@ -15,7 +15,39 @@ function showFileContent($file)
 		case CMDB_FILETYPE_SRT:
 		case CMDB_FILETYPE_BOOKMARKS:
 		case CMDB_FILETYPE_MEDIA:
-			showMediaContent($file);
+			echo "
+				<style>
+					video
+					{
+						width: 85%;
+						margin:0;
+						padding:20px 10px;
+					}
+					audio
+					{
+						width: 100%;
+						margin: 0;
+						padding:40px 10px;
+					}
+				</style>";
+			if($file->hasvideo == 1){
+				echo"
+				<video controls>
+					<source src='/contents/";echo $file->id;echo ".mp4' type='video/mp4'>
+					Your browser does not support the video tag.
+				</video>";
+			}	
+			else{
+				echo"
+				<audio controls>";
+				if($file->mimetype == "audio/mpeg"){
+					echo "<source src='/contents/";echo $file->id;echo ".mp3' type='audio/mp3'></audio>";}
+				elseif($file->mimetype == "audio/x-wav"){
+					echo "<source src='/contents/";echo $file->id;echo ".wav' type='audio/wav'></audio>";}	
+			}
+			$object = getdbo('Object', $_GET['id']);
+			echo $object->doctext;
+			//showMediaContent($file);
 			break;
 		
 		case CMDB_FILETYPE_LIVE:
@@ -28,26 +60,36 @@ function showFileContent($file)
 			break;
 			
 		case CMDB_FILETYPE_PDF:
-			if(!param('usetrackdoc'))
-				showEmbeddedContent(fileUrl($file), false);
+			if(IsMobileDevice())
+				header("location: ".fileUrl($file));
+			else if(!param('usetrackdoc'))
+				showEmbeddedContent(fileUrl($file));
 			else
 				JavascriptReady("window.open('/file/trackdoc?id=$file->id',
-					'sansspace_tracking_$file->id');");
+					'sansspace_tracking_$file->id').focus();");
 
 			break;
 			
 		case CMDB_FILETYPE_URL:
-			if(!param('usetrackdoc'))
-				showEmbeddedContent($file->pathname, false);
+			if(IsMobileDevice())
+				header("location: $file->pathname");
+			else if(!param('usetrackdoc'))
+				showEmbeddedContent($file->pathname);
 			else
 				JavascriptReady("window.open('/file/trackdoc?id=$file->id', 
-					'sansspace_tracking_$file->id');");
+					'sansspace_tracking_$file->id').focus();");
 			break;
 
 		case CMDB_FILETYPE_SWF:
-			$url = fileUrl($file);
-			JavascriptReady("window.open('$url', 'sansspace_tracking_$file->id',
-				'location=0, status=0, toolbar=0, menubar=0, resizable=1').focus();");
+//			$url = fileUrl($file);
+//			JavascriptReady("window.open('$url', 'sansspace_tracking_$file->id',
+//				'location=0, status=0, toolbar=0, menubar=0, resizable=1').focus();");
+
+			if(!param('usetrackdoc'))
+				showEmbeddedContent($file->pathname);
+			else
+				JavascriptReady("window.open('/file/trackdoc?id=$file->id',
+					'sansspace_tracking_$file->id').focus();");
 			break;
 				
 		case CMDB_FILETYPE_DOCUMENT:
@@ -67,13 +109,13 @@ function showFileContent($file)
 	user()->setState('filesession', $filesession->id);
 	user()->setState('currentobject', $file->id);
 	
-	JavascriptReady("window.onbeforeunload = function(){
-		$.ajax({url: '/object/leavepage?id=$file->id', async: false});}");
+//	JavascriptReady("window.onbeforeunload = function(){
+//		$.ajax({url: '/object/leavepage?id=$file->id', async: false});}");
 	
 	return $filesession;
 }
 
-function showEmbeddedContent($url, $internal)
+function showEmbeddedContent($url)
 {
 	echo l(mainimg('16x16_link.png').' Open in a New Window', $url,
 		array('target'=>'_blank', 'title'=>$url));
@@ -83,29 +125,39 @@ function showEmbeddedContent($url, $internal)
 <input type='checkbox' id='hidelink' checked />
 <label for='hidelink'>Show Document</label>
 <br><br>
-<iframe id='linkframe' frameborder=0 src='{$url}' width='100%' height='100'>
+<iframe id='linkframe' frameborder=0 src='{$url}' width='90%' height='100'>
 <p>Your browser does not support iframes.</p></iframe><br>
 <script>
 $(function(){
 	$('#hidelink').click(function(){ $('#linkframe').toggle();});
+	
 END;
 
-	if($internal)
-		echo <<<END
-	$('#linkframe').load(function(){
-		var h = $('#linkframe').contents().find('html').height();
-		$('#linkframe').height(h);
-	});
+	echo <<<END
+	$('#linkframe').height($(window).height());
+	window.location.hash = 'linkframe';
+
 END;
 	
-	else
-		echo <<<END
-		$('#linkframe').height($(window).height());
-		window.location.hash = 'linkframe';
-END;
-
 	echo "})</script>";
 }
+
+// if($internal)
+// 	echo <<<END
+
+// 	$('#linkframe').load(function()
+// 	{
+// 		var h = $('#linkframe').contents().find('html').height();
+// 		$('#linkframe').height(h);
+// 	});
+// END;
+// if(IsMobileDevice())
+// $('#linkframe').load(function()
+// {
+// 	//		$('#linkframe').height(window.innerHeight);
+// });
+
+
 
 function showDocumentContent($file)
 {

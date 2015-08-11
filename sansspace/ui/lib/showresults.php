@@ -3,12 +3,7 @@
 function showListResult($id, $objects, $pages=null)
 {
 	if(!count($objects)) return;
-
-	///////////////////////////////////////////////////////////
-	
-	$cookie = Yii::app()->request->cookies['sansspace_format'];
-	if($cookie) $format = $cookie->value;
-	else $format = 'showsmall';
+	$format = user()->getState('layout');
 	
 	if($pages && $pages->pageCount > 1)
 	{

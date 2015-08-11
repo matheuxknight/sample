@@ -2,7 +2,7 @@
 
 class User extends CActiveRecord
 {
-	static public $isteacher = false;
+	static public $isteacher = null;
 	private $_objectids = null;
 	
 	public static function model($className=__CLASS__)
@@ -31,28 +31,37 @@ class User extends CActiveRecord
 			array('country','length','max'=>200),
 			array('custom1','length','max'=>200),
 			array('custom2','length','max'=>200),
-				
+			array('enrolled','length','max'=>200),
+			
 			array('domainid', 'required'),
 			array('name', 'required'),
 		
 			array('logon', 'required'),
 			array('logon', 'unique'),
-			array('logon', 'match', 'pattern'=>'/^([0-9a-zA-Z\-_])+$/'),
-			array('logon', 'length', 'min'=>2),
-			array('logon', 'length', 'max'=>32),
 				
-			array('email', 'required'),
-			array('email', 'email'),
-			array('email', 'unique'),
+			param('theme')=='wayside'? array('exempt','length','max'=>200): null,
+			param('theme')=='wayside'? array('logon', 'match', 'pattern'=>'/^([0-9a-zA-Z\-_!#*%\.@])+$/'): null,
+			param('theme')=='wayside'? array('logon', 'length', 'min'=>2): null,
+			param('theme')=='wayside'? array('logon', 'length', 'max'=>32): null,
 
-			array('password', 'required'),
-			array('password', 'length', 'min'=>8),
+			param('theme')=='wayside'? array('email', 'required'): null,
+			param('theme')=='wayside'? array('email', 'email'): null,
+			param('theme')=='wayside'? array('email', 'unique'): null,
 
- 			User::$isteacher? array('organisation', 'required'): null,
- 			User::$isteacher? array('city', 'required'): null,
- 			User::$isteacher? array('state', 'required'): null,
- 			User::$isteacher? array('postal', 'required'): null,
- 			User::$isteacher? array('country', 'required'): null,
+			param('theme')=='wayside'? array('password', 'required'): null,
+			param('theme')=='wayside'? array('password', 'length', 'min'=>8): null,
+
+			param('theme')=='wayside'? array('organisation', 'required'): null,
+			param('theme')=='wayside'? array('city', 'required'): null,
+			param('theme')=='wayside'? array('state', 'required'): null,
+			param('theme')=='wayside'? array('postal', 'required'): null,
+			param('theme')=='wayside'? array('country', 'required'): null,
+
+ 			//User::$isteacher? array('organisation', 'required'): null,
+ 			//User::$isteacher? array('city', 'required'): null,
+ 			//User::$isteacher? array('state', 'required'): null,
+ 			//User::$isteacher? array('postal', 'required'): null,
+ 			//User::$isteacher? array('country', 'required'): null,
 		);
 	}
 
@@ -101,6 +110,10 @@ class User extends CActiveRecord
 			'custom1'=>'Custom1',
 			'custom2'=>'Custom2',
 			'comment'=>'Comment',
+			'enrolled'=>'Course Enrollment Status',
+			'exempt'=>'Exempt',
+			'announcement'=>'Announcement',
+            'alertid'=>'Alert ID',
 		);
 	}
 
@@ -187,8 +200,9 @@ class User extends CActiveRecord
 	
 	public function objectRoles($object, $command=null)
 	{
-	//	debuglog("User::objectRoles($object->id, $object->name)");
-	
+	//	debuglog("User::objectRoles($object->id, $object->name) $this->id");
+		$course = getContextCourse();
+		
 		$inherit = true;
 		if($command)
 		{
@@ -202,11 +216,11 @@ class User extends CActiveRecord
 		
 		$extraroles = array(SSPACE_ROLE_ALL);
 		if($this->logon != 'guest') $extraroles[] = SSPACE_ROLE_USER;
-		if($this->logon == 'admin') $extraroles[] = SSPACE_ROLE_ADMIN;
+	//	if($this->logon == 'admin') $extraroles[] = SSPACE_ROLE_ADMIN;
 		if($this->logon == 'admin') $extraroles[] = SSPACE_ROLE_NETWORK;
 		$extrastring = implode(',', $extraroles);
 		
-		while($parent)
+		while($this->id && $parent)
 		{
 		//	debuglog("User::objectRoles1($parent->id, $parent->name)");
 			
@@ -216,15 +230,27 @@ class User extends CActiveRecord
 				"roleid in ($extrastring))))");
 			foreach($es as $e)
 			{
-		//		debuglog("adding role $e->roleid for ObjectEnrollment $parent->name");
+			//	debuglog("adding role $e->roleid for ObjectEnrollment $parent->name");
 				$roles[$e->roleid] = $e->roleid;
+			}
+			
+			if($course && $parent->model && isCourseHasObject($course, $parent))
+			{
+				$e = getdbosql('CourseEnrollment', "objectid=$course->id and userid=$this->id");
+				if($e)
+				{
+					if($e->courseid && !$inherit && $e->roleid == SSPACE_ROLE_TEACHER)
+						$roles[SSPACE_ROLE_USER] = SSPACE_ROLE_USER;
+					else
+						$roles[$e->roleid] = $e->roleid;
+				}
 			}
 
 		//	debuglog("objectid=$parent->id and userid=$this->id");
 			$es = getdbolist('CourseEnrollment', "objectid=$parent->id and userid=$this->id");
 			foreach($es as $e)
 			{
-		//		debuglog("adding role $e->roleid for CourseEnrollment $parent->name");
+			//	debuglog("adding role $e->roleid for CourseEnrollment $parent->name");
 		
 				if($e->courseid && !$inherit && $e->roleid == SSPACE_ROLE_TEACHER)
 					$roles[SSPACE_ROLE_USER] = SSPACE_ROLE_USER;
@@ -240,11 +266,14 @@ class User extends CActiveRecord
 					$roles[SSPACE_ROLE_USER] = SSPACE_ROLE_USER;
 			}
 			
+			if($parent->post)
+				$roles[SSPACE_ROLE_FORUM] = SSPACE_ROLE_FORUM;
+			
 			$parent = $parent->parent;
 		}
 		
 		if($object->authorid == $this->id)
-			$roles[SSPACE_ROLE_CONTENT] = SSPACE_ROLE_CONTENT;
+			$roles[SSPACE_ROLE_OWNER] = SSPACE_ROLE_OWNER;
 	
 		if($object->recordings || $object->parent->recordings)
 		{
@@ -380,8 +409,17 @@ class User extends CActiveRecord
 	}
 	
 	////////////////////////////////////
+	
+	public function getExempt()
+	{
+		if ($this->custom1 == 1)
+			$exempt = "Exempt";
+		else
+			$exempt = "Not Exempt";
+		return $exempt;
+	}
 
-	public function getCurrentCourseCount()
+	public function getEnrolled()
 	{
 		$semester = getCurrentSemester();
 		$coursecount = 0;
@@ -389,10 +427,19 @@ class User extends CActiveRecord
 		foreach($this->courseenrollments as $ce)
 		{
 			if($ce->course->type != CMDB_OBJECTTYPE_COURSE)
-				if($ce->course->semesterid == $semester->id || !$ce->course->semesterid)
+				if($ce->object->type != CMDB_OBJECTTYPE_QUIZ)
+				if($ce->object->type != CMDB_OBJECTTYPE_LESSON)
+				if($ce->object->type != CMDB_OBJECTTYPE_SURVEY)
 				$coursecount++;
 		}
 		
+		if ($coursecount > 0) {
+		$coursecount = "Enrolled ($coursecount)";
+		}
+		
+		else
+		$coursecount = "Not Enrolled";
+
 		return $coursecount;
 	}
 
@@ -402,16 +449,99 @@ class User extends CActiveRecord
 		return isset($a[0])? $a[0]: '';
 	}
 	
+
 	public function getLastname()
 	{
 		$a = explode(' ', $this->name);
-		{
-		return isset($a[1])? ($a[1]): '';
-		}
-
+		unset($a[0]);
+		$a = implode(" ", $a);
+		return($a);
+	}
+ 
+	public function getSecondname()
+	{
+		$a = explode(' ', $this->name);
+		return isset($a[1])? $a[1]: '';
 	}
 	
+	public function getThirdname()
+	{
+		$a = explode(' ', $this->name);
+		return isset($a[2])? $a[2]: '';
+	}
+
+	public function getFourthname()
+	{
+		$a = explode(' ', $this->name);
+		return isset($a[3])? $a[3]: '';
+	}
+
+	public function getFifthname()
+	{
+		$a = explode(' ', $this->name);
+		return isset($a[4])? $a[4]: '';
+	}
+
+	public function getSixthname()
+	{
+		$a = explode(' ', $this->name);
+		return isset($a[5])? $a[5]: '';
+	}
+		
+	public function getCreatedint()
+	{
+		$a = explode(' ', $this->created);
+		return isset($a[0])? $a[0]: '';
+	}
 	
+	public function getLastlogint()
+	{
+		$a = explode(' ', $this->accessed);
+		return isset($a[0])? $a[0]: '';
+	}
+
+	
+	public function getLastlogyearint()
+	{
+		$a = explode('-', $this->lastlogint);
+		return isset($a[0])? $a[0]: '';
+	}
+
+	public function getLastlogmonthint()
+	{
+		$a = explode('-', $this->lastlogint);
+		return isset($a[1])? $a[1]: '';
+	}
+
+	public function getLastlogdayint()
+	{
+		$a = explode('-', $this->lastlogint);
+		return isset($a[2])? $a[2]: '';
+	}
+
+	public function getNowint()
+	{
+		$a = explode(' ', now());
+		return isset($a[0])? $a[0]: '';
+	}
+	
+		public function getNowyearint()
+	{
+		$a = explode('-', $this->nowint);
+		return isset($a[0])? $a[0]: '';
+	}
+
+	public function getNowmonthint()
+	{
+		$a = explode('-', $this->nowint);
+		return isset($a[1])? $a[1]: '';
+	}
+
+	public function getNowdayint()
+	{
+		$a = explode('-', $this->nowint);
+		return isset($a[2])? $a[2]: '';
+	}
 	
 }
 

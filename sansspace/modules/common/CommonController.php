@@ -23,7 +23,8 @@ class CommonController extends CController
 		$this->loadCurrentObject();
 		$this->rbac = new RBAC3(getUser());
 		
-		$allowed = array('site/login', 'site/register', 'site/forgot', 'site/captcha', 'site/admin', 'file/embed');
+		$allowed = array('site/login', 'site/mobileinit', 'site/register', 'site/forgot', 'site/password', 'site/captcha', 
+			'file/embed', 'xml/serverinfo', 'site/admin');
 		$url = "$this->id/{$this->action->id}";
 
 		foreach($allowed as $a)
@@ -31,8 +32,8 @@ class CommonController extends CController
 			if($a == $url)
 				return true;
 		}
-			
-		if(param('mustlogin') && user()->isGuest && !strstr($this->id, 'internal'))
+
+		if(param('mustlogin') && user()->isGuest && !strstr($this->id, 'internal') && getparam('internaluser') != 'system')
 			user()->loginRequired();
 		
 		$hasaccess = $this->rbac->objectUrl($this->object, $this->id, $this->action->id);
@@ -49,7 +50,34 @@ class CommonController extends CController
 				user()->loginRequired();
 			}
 			
-			$this->redirect(array('site/login'));
+			$this->redirect(array('site/denied'));
+		}
+		
+		///////////////////////////////////////////////////////////////////
+		
+		$courseid = intval(getparam('courseid'));
+		if($courseid)
+			setContextCourse($courseid);
+		
+		else
+		{
+			$courseid = getContextCourseId();
+			if(!$courseid)
+			{
+				$parent = $this->object->parent;
+				while($parent)
+				{
+					if($parent->type == CMDB_OBJECTTYPE_COURSE)
+					{
+						$courseid = $parent->id;
+						break;
+					}
+			
+					$parent = $parent->parent;
+				}
+			
+				if($courseid) setContextCourse($courseid);
+			}
 		}
 
 		return true;
@@ -62,6 +90,7 @@ class CommonController extends CController
 		
 		switch(controller()->id)
 		{
+			case 'recorder':
 			case 'object':
 			case 'file':
 			case 'course':

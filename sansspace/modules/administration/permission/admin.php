@@ -87,6 +87,8 @@ function showPermissionTab($tabname, $section)
 	echo "<br/></div>";
 }
 
+$role_owner = SSPACE_ROLE_OWNER;
+$role_forum = SSPACE_ROLE_FORUM;
 $role_content = SSPACE_ROLE_CONTENT;
 $role_teacher = SSPACE_ROLE_TEACHER;
 $role_student = SSPACE_ROLE_STUDENT;
@@ -98,12 +100,14 @@ echo <<<END
 <script>
 $(function()
 { 
-	$('.setperm_class').each(function(e) {
+	$('.setperm_class').each(function(e)
+	{
 		var ar = this.id.match(/\d+/g);
 		refresh_item(ar[0], ar[1]);
 	});
 
-	$('.setperm_class').change(function(e) {
+	$('.setperm_class').change(function(e)
+	{
 		var ar = this.id.match(/\d+/g);
 		refresh_item(ar[0], ar[1]);
 	});
@@ -131,16 +135,22 @@ function refresh_item(itemid, roleid)
 		case '$role_user':
 			if(checked)
 			{
+				$(prefix+$role_forum).attr("disabled", true);
+				$(prefix+$role_owner).attr("disabled", true);
 				$(prefix+$role_student).attr("disabled", true);
 				$(prefix+$role_teacher).attr("disabled", true);
 				$(prefix+$role_content).attr("disabled", true);
 				
+				$(prefix+$role_forum).attr("checked", true);
+				$(prefix+$role_owner).attr("checked", true);
 				$(prefix+$role_student).attr("checked", true);
 				$(prefix+$role_teacher).attr("checked", true);
 				$(prefix+$role_content).attr("checked", true);
 			}
 			else
 			{
+				$(prefix+$role_forum).removeAttr("disabled");
+				$(prefix+$role_owner).removeAttr("disabled");
 				$(prefix+$role_student).removeAttr("disabled");
 				$(prefix+$role_teacher).removeAttr("disabled");
 				$(prefix+$role_content).removeAttr("disabled");

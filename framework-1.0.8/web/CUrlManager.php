@@ -207,32 +207,22 @@ class CUrlManager extends CApplicationComponent
 		}
 		
 		$url = $this->createUrlDefault($route,$params,$ampersand).$anchor;
-		///// SANSSPACE MOD
-		
-// 		$b = preg_match('/\/(object)\?id=([0-9]+)/si', $_SERVER['HTTP_REFERER'], $match);
-// 		if($b && $match[2] != 1)
-// 		{
-// 			$object = getdbo('Object', $match[2]);
-// 			if($object->type == CMDB_OBJECTTYPE_LINK)
-// 				$url .= "&linkid=$object->id";
-// 		}
-		
-		if(IsMobileEmbeded())
-			$url .= "&noheader";
 
-		else
+		///// SANSSPACE MOD
+		$b = preg_match('/\/(object|course|file)\?id=([0-9]+)(.*)/si', $url, $match);
+		if($b && $match[2] != 1 && !strstr($match[3], '%2F'))
 		{
-			$b = preg_match('/\/(object|course|file)\?id=([0-9]+)/si', $url, $match);
-			if($b && $match[2] != 1)
-			{
-				$object = getdbo('Object', $match[2]);
-				$suffixe = sanitize_name($object->name);
-				$url .= "/$suffixe";
-			}
+			$object = getdbo('Object', $match[2]);
+			$suffixe = sanitize_name($object->name);
+			
+			//
+			
+			$url .= "/$suffixe";
 		}
 		
 	//	debuglog("url ".$url);
 		///////////////////
+		
 		return $url;
 	}
 

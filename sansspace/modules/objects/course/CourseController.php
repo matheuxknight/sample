@@ -196,8 +196,8 @@ class CourseController extends CommonController
 	
 	public function actionCreatedTeacher()
 	{
-		//$course = $this->loadcourse();
-		$this->render('createdteacher');
+		$course = $this->loadcourse();
+		$this->render('createdteacher', array('course'=>$course));
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////

@@ -18,17 +18,17 @@ echo CUFHtml::closeCtrlHolder();
 
 if(controller()->rbac->globalAdmin())
 {
-	echo CUFHtml::openActiveCtrlHolder($comment, 'courseid');
-	echo CUFHtml::activeLabelEx($comment, 'courseid');
-	echo CUFHtml::activeHiddenField($comment, 'courseid');
-	echo CUFHtml::textField('courseid_xx', $comment->course? $comment->course->name: '', 
-		array('class'=>'textInput', 'readonly'=>true));
+// 	echo CUFHtml::openActiveCtrlHolder($comment, 'courseid');
+// 	echo CUFHtml::activeLabelEx($comment, 'courseid');
+// 	echo CUFHtml::activeHiddenField($comment, 'courseid');
+// 	echo CUFHtml::textField('courseid_xx', $comment->course? $comment->course->name: '', 
+// 		array('class'=>'textInput', 'readonly'=>true));
 	
-	showObjectBrowserButton($comment->course, 'false', 'true', 'Comment_courseid', 'courseid_xx');
-	echo "<p class='formHint2'>The course context this comment is attached to.</p>";
-	echo '<br><br>'.CHtml::linkButton('[Reset]',
-		array('submit'=>array('comment/resetcontextcourse', 'id'=>$comment->id), 'confirm'=>'Are you sure?'));
-	echo CUFHtml::closeCtrlHolder();
+// 	showObjectBrowserButton($comment->course, 'false', 'true', 'Comment_courseid', 'courseid_xx');
+// 	echo "<p class='formHint2'>The course context this comment is attached to.</p>";
+// 	echo '<br><br>'.CHtml::linkButton('[Reset]',
+// 		array('submit'=>array('comment/resetcontextcourse', 'id'=>$comment->id), 'confirm'=>'Are you sure?'));
+// 	echo CUFHtml::closeCtrlHolder();
 	
 	echo CUFHtml::openActiveCtrlHolder($comment, 'pinned');
 	echo CUFHtml::activeLabelEx($comment, 'pinned');

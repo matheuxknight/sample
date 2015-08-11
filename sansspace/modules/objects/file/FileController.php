@@ -28,8 +28,13 @@ class FileController extends CommonController
 		$parentid = getparam('id');
 		
 		$fileid = HandleUploadedFiles($parentid);
-		if($fileid) $this->redirect(array('object/', 'id'=>$parentid));
+		if($fileid)
+		{
+			$this->redirect(array('object/', 'id'=>$parentid));
+			return;
+		}
 		
+		debuglog("actionUpload 2");
 		$this->render('upload', array('parentid'=>$parentid));
 	}
 	
@@ -160,7 +165,7 @@ class FileController extends CommonController
 
 			objectUpdateParent($file2, now());
 
-			debuglog("new fileid $file2->id");
+		//	debuglog("new fileid $file2->id");
 			$rfile = getdbo('File', $file2->id);
 			$rfile->mimetype = 'text/plain';
 			$rfile->save();
