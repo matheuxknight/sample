@@ -2,7 +2,7 @@
 
 showAdminHeader(2);
 echo "<h2>Manage Users</h2>";
-$searchtitle = 'Search users';
+$searchtitle = '';
 
 showButtonHeader();
 showButton('All Users', array('admin'));
@@ -32,6 +32,7 @@ echo "<li><a href='#results'>Teachers</a></li>";
 echo "<li><a href='#results'>Content Managers</a></li>";
 echo "<li><a href='#results'>Admins</a></li>";
 echo "<li><a href='#results'>Network Admins</a></li>";
+
 echo "</ul>";
 
 echo "<br>";
