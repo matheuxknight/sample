@@ -1,5 +1,4 @@
 <?php
-
 $this->widget('UniForm');
 
 echo CUFHtml::beginForm();
@@ -36,25 +35,25 @@ echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'logon');
 echo CUFHtml::activeLabelEx($user, 'logon');
-echo CUFHtml::activeTextField($user, 'logon', array('logon','length','max'=>80));
+echo CUFHtml::activeTextField($user, 'logon', array('logon','length','max'=>200));
 echo "<p class='formHint2'>Unique logon used to connect to this server.</p>";
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'name');
 echo CUFHtml::activeLabelEx($user, 'name');
-echo CUFHtml::activeTextField($user,'name',array('maxlength'=>80));
+echo CUFHtml::activeTextField($user,'name',array('maxlength'=>200));
 echo "<p class='formHint2'>Complete user name.</p>";
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'email');
 echo CUFHtml::activeLabelEx($user, 'email');
-echo CUFHtml::activeTextField($user, 'email', array('email','length','max'=>80));
+echo CUFHtml::activeTextField($user, 'email', array('email','length','max'=>200));
 echo "<p class='formHint2'></p>";
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openCtrlHolder();
 echo CUFHtml::label('Password', 'password');
-echo CUFHtml::textField('password', '', array('max'=>80, 'class'=>'miscInput'));
+echo CUFHtml::textField('password', '', array('max'=>200, 'class'=>'miscInput'));
 if($update)
 {
 	echo "<p class='formHint2'>Leave blank for no change.</p>";
@@ -67,21 +66,21 @@ echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openCtrlHolder();
 echo CUFHtml::label('Confirm', 'confirm');
-echo CUFHtml::textField('confirm', '', array('max'=>80, 'class'=>'miscInput'));
+echo CUFHtml::textField('confirm', '', array('max'=>200, 'class'=>'miscInput'));
 echo "<p class='formHint2'>Confirm the new password.</p>";
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'custom1');
-echo CUFHtml::activeLabelEx($user, 'custom1', array('label'=>'Exempt'));
-echo CUFHtml::activeCheckBox($user, 'custom1');
-echo "<p class='formHint2'>Check this box to put an unenrolled user on the exempt from delete list.</p>";
+echo CUFHtml::activeLabelEx($user, 'custom1');
+echo CUFHtml::activeTextField($user, 'custom1', array('length','max'=>200));
+echo "<p class='formHint2'>Custom field for any specific usage.</p>";
 echo CUFHtml::closeCtrlHolder();
 
-echo CUFHtml::openActiveCtrlHolder($user, 'enrolled');
-echo CUFHtml::activeLabelEx($user, 'enrolled');
-echo CUFHtml::activeTextField($user, 'enrolled', array('readonly'=>true));
-echo "<p class='formHint2'></p>";
-echo CUFHtml::closeCtrlHolder();
+// echo CUFHtml::openActiveCtrlHolder($user, 'custom2');
+// echo CUFHtml::activeLabelEx($user, 'custom2');
+// echo CUFHtml::activeTextField($user, 'custom2', array('length','max'=>200));
+// echo "<p class='formHint2'></p>";
+// echo CUFHtml::closeCtrlHolder();
 
 echo "</div>";
 
@@ -91,41 +90,41 @@ echo "<div id='tabs-2'>";
 
 echo CUFHtml::openActiveCtrlHolder($user, 'organisation');
 echo CUFHtml::activeLabelEx($user,'organisation');
-echo CUFHtml::activeTextField($user,'organisation',array('maxlength'=>80));
+echo CUFHtml::activeTextField($user,'organisation',array('maxlength'=>200));
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'phone1');
 echo CUFHtml::activeLabelEx($user, 'phone1');
-echo CUFHtml::activeTextField($user, 'phone1', array('phone1','length','max'=>80));
+echo CUFHtml::activeTextField($user, 'phone1', array('phone1','length','max'=>200));
 echo "<p class='formHint2'></p>";
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'address');
 echo CUFHtml::activeLabelEx($user, 'address');
-echo CUFHtml::activeTextField($user, 'address', array('address','length','max'=>80));
+echo CUFHtml::activeTextField($user, 'address', array('address','length','max'=>200));
 echo "<p class='formHint2'></p>";
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'city');
 echo CUFHtml::activeLabelEx($user, 'city');
-echo CUFHtml::activeTextField($user, 'city', array('city','length','max'=>80));
+echo CUFHtml::activeTextField($user, 'city', array('city','length','max'=>200));
 echo "<p class='formHint2'></p>";
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'postal');
 echo CUFHtml::activeLabelEx($user, 'postal');
-echo CUFHtml::activeTextField($user, 'postal', array('maxlength'=>10));
+echo CUFHtml::activeTextField($user, 'postal', array('maxlength'=>200));
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'state');
 echo CUFHtml::activeLabelEx($user, 'state');
-echo CUFHtml::activeTextField($user, 'state', array('state','length','max'=>20));
+echo CUFHtml::activeTextField($user, 'state', array('state','length','max'=>200));
 echo "<p class='formHint2'></p>";
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'country');
 echo CUFHtml::activeLabelEx($user, 'country');
-echo CUFHtml::activeTextField($user, 'country', array('country','length','max'=>80));
+echo CUFHtml::activeTextField($user, 'country', array('country','length','max'=>200));
 echo "<p class='formHint2'></p>";
 echo CUFHtml::closeCtrlHolder();
 
@@ -217,7 +216,6 @@ echo "<th></th>";
 echo "</tr></thead><tbody>";
 
 foreach($user->courseenrollments as $enrollment)
-
 {
 	if($enrollment->object->type != CMDB_OBJECTTYPE_COURSE) continue;
 	$course = $enrollment->object->course;
@@ -249,14 +247,10 @@ foreach($user->courseenrollments as $enrollment)
 	echo "</td>";
 
 	echo "</tr>";
-	$courseCount++;
 }
-echo "<tr class='ssrow'>";
-echo "<td></td><td></td><td></td><td></td><td colspan='2'><b>Courses Enrolled In : $courseCount</b></td></tr>";
+
 echo"</table>";
 echo "</div>";
-
-
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -376,16 +370,7 @@ echo CUFHtml::closeTag('fieldset');
 showSubmitButton($update? 'Save': 'Create');
 echo CUFHtml::endForm();
 
-echo <<<end
-<script>
-$(document).ready(function(){
-  $("#User_exempt").change(function(){
-	if ($(this).attr('checked')) 
-        	$user->exempt = 1;
-	else
-		$user->exempt = 0;
-  });
-});
-</script>
-end;
+
+
+
 

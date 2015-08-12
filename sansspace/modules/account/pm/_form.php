@@ -62,12 +62,7 @@ echo CUFHtml::activeCheckBox($pm, 'draft', array('class'=>'miscInput'));
 echo "<p class='formHint2'>Check this box to only save your message in your Draft box. 
 The message will not be sent.</p>";
 echo CUFHtml::closeCtrlHolder();
-	
-//echo CUFHtml::openCtrlHolder();
-//echo CUFHtml::activeLabelEx($pm, 'smtp');
-//echo CUFHtml::activeCheckBox($pm, 'smtp', array('class'=>'miscInput'));
-//echo "<p class='formHint2'>Check this box to also send an SMTP email to user(s).</p>";
-//echo CUFHtml::closeCtrlHolder();
+
 	
 echo CUFHtml::closeTag('fieldset');
 showSubmitButton('Send');

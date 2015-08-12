@@ -4,7 +4,6 @@ $downloadlink = l(mainimg('16x16_bottom.png'),
 	array('usercsv', 
 		'Name'=>$user->name,
 		'Logon'=>$user->logon,
-		'Email'=>$user->email,
 		'Role'=>$user->role,
 		'Domain'=>$user->domain,
 		'Created'=>$user->created,
@@ -24,16 +23,14 @@ echo "<thead class='ui-widget-header'><tr>";
 echo "<th width=20></th>";
 echo "<th>Name</th>";
 echo "<th>Logon</th>";
-echo "<th>Email</th>";
-//echo "<th>Custom</th>";
+//echo "<th>Email</th>";
+echo "<th>Custom</th>";
 //echo "<th>Role</th>";
-//echo "<th>Domain</th>";
+echo "<th>Domain</th>";
 echo "<th>Created</th>";
-echo "<th>Last Online</th>";
-echo "<th>Course Status</th>";
-if(param('theme')=='wayside')
-	echo "<th>Exempt Status</th>";
-echo "<th>Delete User</th>";
+echo "<th>Last</th>";
+echo "<th>Enroll</th>";
+echo "<th></th>";
 echo "</tr></thead><tbody>";
 
 foreach($users as $model)
@@ -46,26 +43,20 @@ foreach($users as $model)
 	echo "</td>";
 
 	echo "<td>$model->logon</td>";
-	echo "<td>$model->email</td>";
+//	echo "<td>$model->email</td>";
 //	echo "<td>$model->roleText</td>";
-//	echo "<td>$model->custom1</td>";
-//	echo "<td>{$model->domain->name}</td>";
+	echo "<td>$model->custom1</td>";
+	echo "<td>{$model->domain->name}</td>";
 
 	echo "<td nowrap>".datetoa($model->created)."</td>";
 	echo "<td nowrap>".datetoa($model->accessed)."</td>";
 
-	//$count = dboscalar("select count(*) from CourseEnrollment where userid=$model->id");
-	//$count = dboscalar("select count(*) from ObjectEnrollment where userid=$model->id");
-	//$count = $form->courseCount;
+	$count = dboscalar("select count(*) from ObjectEnrollment where userid=$model->id");
+	$count += dboscalar("select count(*) from CourseEnrollment where userid=$model->id");
 	
-	$count = $model->enrolled;	
-	
-	echo "<td>$count</td>";
+	echo "<td>($count)</td>";
 
-	if(param('theme')=='wayside')
-		echo "<td>$model->exempt</td>";
-
-	echo "<td style='text-align:center'>";
+	echo "<td>";
 	echo l(mainimg('16x16_delete.png'), '#', array('id'=>"delete_user_{$model->id}"));
 
 	echo <<<END

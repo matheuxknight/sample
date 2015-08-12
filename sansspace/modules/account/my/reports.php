@@ -1,7 +1,24 @@
 <?php
 
+echo <<<end
+<script type="text/javascript">
+	$(document).ready(function() 
+{
+	$('#popup').dialog({ autoOpen: false, modal: true, width: '40%', dialogClass:'modalpopup' })
+	$('#popuplink').click(function(){ $('div#popup').dialog('open'); });
+})
+</script>
+<div id="popup" title="Grades">
+    <p style='font-size:20px' autofocus>Teachers:<br>
+	<span style='font-size:16px'>Review all of your students&#8217; work in Grades. Locate and assess completed essays and open-ended tasks. Provide both voice and written feedback on all of your students&#8217; recordings.<br>Assess each student&#8217;s performance by evaluating time spent working with audios and videos and attempts made on each quiz. Automatically graded activities, such as multiple choice, true or false, matching, and cloze, are recorded here as well.</span></p>
+	<p style='font-size:20px'>Students:<br>
+	<span style='font-size:16px'>Your students can view all of their graded or assessed activities and listen to or read your feedback</span></p>
+	<p style='font-size:14px'>Click on the <b><u>course name</b></u> to view.</p>
+</div>
+end;
+
 $this->pageTitle = "My Reports ". Yii::app()->name;
-echo "<h2>Grades</h2>";
+echo "<h2>Grades    <a href='#' id='popuplink'><em style='color:#ec4546; font-size:16px; verticle-align:middle' class='fa fa-question-circle'></em></a></h2>";
 
 $user = getUser();
 showTableSorter('maintable', '{headers: {1: {sorter: false}, 2: {sorter: false}, 0: {sorter: false}}}');
@@ -82,6 +99,8 @@ echo "</tbody><tr>";
 
 echo "</table>";
 echo "<br/>";
+
+
 
 
 

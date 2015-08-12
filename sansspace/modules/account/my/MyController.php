@@ -59,6 +59,76 @@ class MyController extends CommonController
 		}
 	}
 
+	
+	public function actionSampleSettings()
+	{
+		$user = getUser();
+		if(isset($_POST['User']))
+		{
+			if(isset($_POST['password']) && isset($_POST['confirm']))
+			{
+				$password = $_POST['password'];
+				$confirm = $_POST['confirm'];
+	
+				if(!empty($password))
+				{
+					if($password != $confirm)
+					{
+						user()->setFlash('message', 'The password and the confirmation password are different.');
+						$this->render('settings', array('user'=>$user));
+						
+						return;
+					}
+	
+					$user->password = md5($password);
+				}
+			}
+			
+			$user2 = userUpdateData($user, $_POST['User']);
+			if(!$user2)
+			{
+				$this->render('settings', array('user'=>$user));
+				return;
+			}
+			
+		//	user()->setFlash('message', 'Information saved.');
+		//	controller()->refresh();
+		}
+
+		$snapname = SANSSPACE_TEMP."/webcamsnapshot-{$user->id}.png";
+		$avatarname = SANSSPACE_CONTENT."/avatar-{$user->id}.png";
+		
+		// check for uploaded file
+		$tempname = GetUploadedFilename();
+		if($tempname)
+		{
+			@unlink($avatarname);
+			@rename($tempname, $avatarname);
+			$this->refresh();
+		}
+		
+		// check for url
+		else if(isset($_POST['icon_url']) && !empty($_POST['icon_url']))
+		{
+			$buffer = fetch_url($_POST['icon_url']);
+			
+			@unlink($avatarname);
+			file_put_contents($avatarname, $buffer);
+			$this->refresh();
+		}
+		
+		// check for webcam snapshot
+		else if(file_exists($snapname))
+		{
+			@unlink($avatarname);
+			imageProcessAll($snapname, $avatarname);
+			@unlink($snapname);
+			$this->refresh();
+		}
+		
+		$this->render('samplesettings', array('user'=>$user));
+	}
+	
 	public function actionSettings()
 	{
 		$user = getUser();

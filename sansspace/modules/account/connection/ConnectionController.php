@@ -146,13 +146,13 @@ class ConnectionController extends CommonController
 
 		//////////////////////////////////////////////
 
-	//	if(!$this->rbac->globalAdmin()) return;
+		if(!$this->rbac->globalAdmin()) return;
 		
 		$server = getdbo('Server', '1');
 	//	debuglog("netmessage: $server->netmessage");
 		
 		echo "<?xml version='1.0' encoding='utf-8' ?>";
-		echo "<response>";
+		echo "<response>fdafd";
 
 		echo "<logoff>0</logoff>";
 		echo "<online>$online</online>";

@@ -57,7 +57,7 @@ class UserController extends CommonController
 				}
 			}
 
-			user()->setFlash('message', 'Saved.');
+			user()->setFlash('message', 'Roles saved.');
 		}
 		
 		if(isset($_POST['User']))
@@ -329,11 +329,10 @@ class UserController extends CommonController
 	public function actionLoadResults()
 	{
 		$criteria = new CDbCriteria;
-
 		if(isset($_GET['search']))
 		{
 			$search = $_GET["search"];
-			$criteria->condition = "(name like :sterm or logon like :sterm or custom1 like :sterm or email like :sterm or phone1 like :sterm or organisation like :sterm or city like :sterm or state like :sterm)";
+			$criteria->condition = "(name like :sterm or logon like :sterm or custom1 like :sterm)";
 			$criteria->params = array(":sterm"=>"%$search%");
 		}
 
@@ -426,15 +425,15 @@ class UserController extends CommonController
 		header('Content-type: text/csv');
 		header('Content-disposition: attachment;filename=usercsv.csv');
 		
-		echo "Name,Username,Role,Email,Enrollment Status,\r\n";
+		echo "Name,Logon,Role,Domain,Created,Last\r\n";
 		
-		$users = getdbolist('user');
+		$users = getdbolist("user");
 		foreach($users as $user)
 		{
 		//	$created = substr(datetoa($user->created), 34, (strrpos(datetoa($user->created),"o")) - 33); 
 		//	$last = substr(datetoa($user->accessed), 34, (strrpos(datetoa($user->accessed),"o")) - 33);
 			 
-			echo "$user->name,$user->logon,$user->roleText,$user->email,$user->enrolled\r\n";
+			echo "$user->name,$user->logon,$user->roleText,{$user->domain->name},$user->created,$user->last\r\n";
 		}
 	}
 

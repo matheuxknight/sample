@@ -1,5 +1,7 @@
 <?php
 
+if(controller()->rbac->globalAdmin())
+{
 showUserHeader($user, "My Profile");
 $this->widget('UniForm');
 
@@ -25,25 +27,15 @@ echo "<div class='textInput sans-input'>{$user->logon}</div>";
 echo "<p class='formHint2'>Your logon used to connect to this server.</p>";
 echo CUFHtml::closeCtrlHolder();
 
-//echo "&nbsp;&nbsp;<b>Global Roles</b> ";
-//$roles = controller()->rbac->globalRoles();
-//foreach($roles as $roleid)
-//{
-//	if($roleid == SSPACE_ROLE_ALL || $roleid == SSPACE_ROLE_USER) continue;
-//	
-//	$role = getdbo('Role', $roleid);
-//	echo "$role->name, ";
-//}
-
 echo CUFHtml::openActiveCtrlHolder($user, 'name');
 echo CUFHtml::activeLabelEx($user, 'name');
-echo CUFHtml::activeTextField($user, 'name', array('maxlength'=>45));
+echo CUFHtml::activeTextField($user, 'name', array('maxlength'=>200));
 echo "<p class='formHint2'>Your complete name.</p>";
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'email');
 echo CUFHtml::activeLabelEx($user, 'email');
-echo CUFHtml::activeTextField($user, 'email', array('maxlength'=>80));
+echo CUFHtml::activeTextField($user, 'email', array('maxlength'=>200));
 echo "<p class='formHint2'>The email that this server will use to send you information about your account.</p>";
 echo CUFHtml::closeCtrlHolder();
 
@@ -51,7 +43,7 @@ if(!$user->domain->ldapenable)
 {
 	echo CUFHtml::openCtrlHolder();
 	echo CUFHtml::label('Password', 'password');
-	echo CUFHtml::passwordField('password', '', array('maxlength'=>50, 'class'=>'miscInput'));
+	echo CUFHtml::passwordField('password', '', array('maxlength'=>200, 'class'=>'miscInput'));
 	echo "<p class='formHint2'>Leave blank for no change.</p>";
 
 //	if(!empty($user->password) && !param('required_password'))
@@ -61,7 +53,7 @@ if(!$user->domain->ldapenable)
 	
 	echo CUFHtml::openCtrlHolder();
 	echo CUFHtml::label('Confirm', 'confirm');
-	echo CUFHtml::passwordField('confirm', '', array('maxlength'=>50, 'class'=>'miscInput'));
+	echo CUFHtml::passwordField('confirm', '', array('maxlength'=>200, 'class'=>'miscInput'));
 	echo "<p class='formHint2'>Confirm your new password.</p>";
 	echo CUFHtml::closeCtrlHolder();
 }
@@ -78,48 +70,41 @@ echo "<div id='tabs-2'>";
 
 echo CUFHtml::openActiveCtrlHolder($user, 'organisation');
 echo CUFHtml::activeLabelEx($user,'organisation');
-echo CUFHtml::activeTextField($user,'organisation', array('maxlength'=>80));
+echo CUFHtml::activeTextField($user,'organisation', array('maxlength'=>200));
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'phone1');
 echo CUFHtml::activeLabelEx($user, 'phone1');
-echo CUFHtml::activeTextField($user, 'phone1', array('maxlength'=>50));
+echo CUFHtml::activeTextField($user, 'phone1', array('maxlength'=>200));
 echo "<p class='formHint2'></p>";
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'address');
 echo CUFHtml::activeLabelEx($user, 'address');
-echo CUFHtml::activeTextField($user, 'address', array('maxlength'=>80));
+echo CUFHtml::activeTextField($user, 'address', array('maxlength'=>200));
 echo "<p class='formHint2'></p>";
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'city');
 echo CUFHtml::activeLabelEx($user, 'city');
-echo CUFHtml::activeTextField($user, 'city', array('maxlength'=>50));
+echo CUFHtml::activeTextField($user, 'city', array('maxlength'=>200));
 echo "<p class='formHint2'></p>";
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'postal');
 echo CUFHtml::activeLabelEx($user, 'postal');
-echo CUFHtml::activeTextField($user, 'postal', array('maxlength'=>20));
+echo CUFHtml::activeTextField($user, 'postal', array('maxlength'=>200));
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'state');
 echo CUFHtml::activeLabelEx($user, 'state');
-echo CUFHtml::activeTextField($user, 'state', array('maxlength'=>20));
+echo CUFHtml::activeTextField($user, 'state', array('maxlength'=>200));
 echo "<p class='formHint2'></p>";
 echo CUFHtml::closeCtrlHolder();
 
 echo CUFHtml::openActiveCtrlHolder($user, 'country');
 echo CUFHtml::activeLabelEx($user, 'country');
-echo CUFHtml::activeTextField($user, 'country', array('maxlength'=>50));
-echo "<p class='formHint2'></p>";
-echo CUFHtml::closeCtrlHolder();
-
-
-echo CUFHtml::openActiveCtrlHolder($user, 'enrolled');
-echo CUFHtml::activeLabelEx($user, 'enrolled');
-echo CUFHtml::activeTextField($user, 'enrolled', array('readonly'=>true));
+echo CUFHtml::activeTextField($user, 'country', array('maxlength'=>200));
 echo "<p class='formHint2'></p>";
 echo CUFHtml::closeCtrlHolder();
 
@@ -140,7 +125,7 @@ echo '<div class="flash" id="fsUploadProgress"></div>';
 
 echo CUFHtml::openCtrlHolder();
 echo CUFHtml::label('Internet File', 'icon_url');
-echo CUFHtml::textField('icon_url', '', array('maxlength'=>50, 'class'=>'textInput'));
+echo CUFHtml::textField('icon_url', '', array('maxlength'=>200, 'class'=>'textInput'));
 echo "<p class='formHint2'>Or enter an internet url to an image file. (http://server.com/file.png).</p>";
 echo CUFHtml::closeCtrlHolder();
 
@@ -218,6 +203,7 @@ echo "</div>";
 echo CUFHtml::closeTag('fieldset');
 showSubmitButton('Save');
 echo CUFHtml::endForm();
+}
 
 
 
